@@ -2,20 +2,24 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
 const Heatmap = () => {
-  // Create a random data array with 14600 values between 0 and 1
-  const data = Array.from({ length: 14600 }, (_, index) => {
+  // Define the number of teachers and weeks
+  const numTeachers = 40;
+  const numWeeks = 52;
+
+  // Generate random data for teachers and weeks
+  const data = Array.from({ length: numTeachers * numWeeks }, (_, index) => {
     const uniqueValue = Math.random();
     return {
-      row: Math.floor(index / 365), // Update to match the number of squares on the y-axis
-      col: index % 365, // Update to match the number of squares on the x-axis
+      teacher: Math.floor(index / numWeeks), // Assign teachers
+      week: index % numWeeks, // Assign weeks
       value: uniqueValue,
     };
   });
 
   // Define the dimensions of the heatmap
   const width = 1400;
-  const height = 400;
-  const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+  const height = 800; // Increased height to accommodate teacher labels
+  const margin = { top: 60, right: 20, bottom: 60, left: 80 }; // Adjusted margins
 
   // Create an SVG element to hold the heatmap
   const svg = d3
@@ -30,29 +34,63 @@ const Heatmap = () => {
     .domain([0, 1])
     .interpolator(d3.interpolateViridis);
 
-  // Create a band scale to map the row and col values to pixel values
+  // Create scales for x and y axes
   const xScale = d3
     .scaleBand()
-    .domain(d3.range(365))
+    .domain(d3.range(numWeeks))
     .range([margin.left, width - margin.right])
-    .padding(0.01);
+    .padding(0.1);
 
   const yScale = d3
     .scaleBand()
-    .domain(d3.range(40))
+    .domain(d3.range(numTeachers))
     .range([margin.top, height - margin.bottom])
-    .padding(0.01);
+    .padding(0.1);
 
   // Create the rectangles for the heatmap
   const cells = svg
     .selectAll("rect")
     .data(data)
     .join("rect")
-    .attr("x", (d) => xScale(d.col))
-    .attr("y", (d) => yScale(d.row))
+    .attr("x", (d) => xScale(d.week))
+    .attr("y", (d) => yScale(d.teacher))
     .attr("width", xScale.bandwidth())
     .attr("height", yScale.bandwidth())
     .attr("fill", (d) => colorScale(d.value));
+
+  // Create x-axis with only week numbers
+  svg
+    .append("g")
+    .attr("transform", `translate(0, ${height - margin.bottom})`)
+    .call(
+      d3
+        .axisBottom(xScale)
+        .tickValues(d3.range(numWeeks))
+        .tickFormat((d) => `${d + 1}`)
+    );
+
+  // Label for "Week:"
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height - 20)
+    .text("Week:")
+    .style("font-weight", "bold");
+
+  // Label for "Teachers:"
+  svg
+    .append("text")
+    .attr("y", margin.top - 15)
+    .attr("x", margin.left - 30)
+    .style("text-anchor", "middle")
+    .text("Teachers:")
+    .style("font-weight", "bold");
+
+  // Create y-axis with teacher labels
+  svg
+    .append("g")
+    .attr("transform", `translate(${margin.left}, 0)`)
+    .call(d3.axisLeft(yScale).tickFormat((d) => `Teacher ${d + 1}`));
 
   // Create a reference to a div element
   const divRef = useRef(null);
