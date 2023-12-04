@@ -5,72 +5,75 @@ const Heatmap = () => {
   // Define the number of teachers and weeks
   const numTeachers = 40;
   const numWeeks = 52;
+  const width = 1200;
 
-  // Generate random data for teachers and weeks
+  const margin = { top: 60, right: 20, bottom: 60, left: 80 }; // Adjusted margins
+  // Calculate the height based on the number of teachers
+  const cellHeight = 15; // Change this value as needed for cell height
+  const cellPadding = 2; // Change this value as needed for cell padding
+  const height = numTeachers * (cellHeight + cellPadding) + 2 * margin.top;
+
+  // Generate random data for teachers and weeks with the 'value' property
   const data = Array.from({ length: numTeachers * numWeeks }, (_, index) => {
-    const uniqueValue = Math.random();
+    const uniqueValue = Math.floor(Math.random() * 5); // Generates random values from 0 to 4
     return {
       teacher: Math.floor(index / numWeeks), // Assign teachers
       week: index % numWeeks, // Assign weeks
-      value: uniqueValue,
+      value: uniqueValue, // Assign a random value between 0 and 4
     };
   });
 
   // Define the dimensions of the heatmap
-  const width = 1400;
-  const height = 800; // Increased height to accommodate teacher labels
-  const margin = { top: 60, right: 20, bottom: 60, left: 80 }; // Adjusted margins
 
-  // Create an SVG element to hold the heatmap
+  // Update the heatmap SVG's height
   const svg = d3
     .create("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height]);
 
+  // Add labels for the color scale
+  const colorLabels = ["150", "120", "100", "80", "60"];
   // Create a separate SVG for the color scale
-  const colorScaleSvg = d3.create("svg")
+  const colorScaleSvg = d3
+    .create("svg")
     .attr("width", 50) // Increased width to accommodate labels
     .attr("height", height)
-    .attr("viewBox", [0, 0, 50, height]);
+    .attr("viewBox", [0, 0, 70, height]);
 
   // Create a linear color scale for the color scale
   const colorScale = d3
-    .scaleLinear()
-    .domain([1, 1 / 2, 0])
-    .range(["blue", "green", "red"]);
+    .scaleOrdinal()
+    .domain([0, 1, 2, 3, 4])
+    .range(["red", "orange", "green", "cyan", "blue"]);
 
-  // Create rectangles for the color scale
+  // Calculate the total height occupied by the squares
+  const totalColorScaleHeight = colorLabels.length * 50; // Assuming each square is 50 units tall
+
+  // Calculate the top position for center alignment
+  const topPosition = (height - totalColorScaleHeight) / 2;
+
   colorScaleSvg
     .selectAll("rect")
-    .data(d3.range(height))
+    .data(colorLabels) // Use color labels to bind data once for each color
     .join("rect")
-    .attr("width", 20) // Width of the color scale
-    .attr("height", 1)
+    .attr("width", 50) // Width of the color scale
+    .attr("height", 50) // Height of each square
     .attr("x", 0)
-    .attr("y", (d) => d)
-    .attr("fill", (d) => colorScale(d / height));
-
-  // Add labels for the color scale
-  const colorLabels = ["< 100%", "100%", "> 100%"];
+    .attr("y", (d, i) => topPosition + i * 50) // Position each square accordingly for vertical alignment
+    .attr("fill", (d, i) => colorScale(i)); // Use the index as the domain value
 
   colorScaleSvg
     .selectAll("text")
     .data(colorLabels)
     .join("text")
-    .attr("x", 30) // Positionen för texten (justera detta värde)
-    .attr("y", (d, i) => (i * height) / (colorLabels.length - 1) + 6) // Positionen för texten (justera detta värde)
+    .attr("x", 25) // Position of text labels at the center of squares
+    .attr("y", (d, i) => topPosition + i * 50 + 25) // Align text labels vertically centered with squares
     .attr("dy", "0.35em")
-    .style("font-size", "12px")
-    .style("text-anchor", "start")
+    .style("font-size", "15px")
+    .style("text-anchor", "middle") // Align text horizontally at the center
+    .style("font-weight", "bold")
     .text((d) => d);
-
-  // Define the color scale for the heatmap
-  const customColorScale = d3
-    .scaleLinear()
-    .domain([1, 1 / 2, 0])
-    .range(["red", "green", "blue"])
-    .interpolate(d3.interpolateRgb);
 
   // Create scales for x and y axes
   const xScale = d3
@@ -79,11 +82,12 @@ const Heatmap = () => {
     .range([margin.left, width - margin.right])
     .padding(0.1);
 
+  // Update the scales for x and y axes using the new height
   const yScale = d3
     .scaleBand()
     .domain(d3.range(numTeachers))
     .range([margin.top, height - margin.bottom])
-    .padding(0.1);
+    .padding(cellPadding / (cellHeight + cellPadding));
 
   // Create the rectangles for the heatmap
   const cells = svg
@@ -94,7 +98,7 @@ const Heatmap = () => {
     .attr("y", (d) => yScale(d.teacher))
     .attr("width", xScale.bandwidth())
     .attr("height", yScale.bandwidth())
-    .attr("fill", (d) => customColorScale(d.value));
+    .attr("fill", (d) => colorScale(d.value));
 
   // Create vertical lines to represent periods
   const periodLines = [13, 26, 39, 52]; // Divide 52 weeks into 4 periods
@@ -104,12 +108,12 @@ const Heatmap = () => {
     .enter()
     .append("line")
     .attr("class", "period-line")
-    .attr("x1", (d) => xScale(d - 0.5))
-    .attr("x2", (d) => xScale(d - 0.5))
+    .attr("x1", (d) => xScale(d - 1) + xScale.bandwidth() / 2) // Adjust x-coordinate to place lines between weeks
+    .attr("x2", (d) => xScale(d - 1) + xScale.bandwidth() / 2) // Adjust x-coordinate to place lines between weeks
     .attr("y1", margin.top)
     .attr("y2", height - margin.bottom)
     .style("stroke", "black")
-    .style("stroke-dasharray", "3,3");
+    .style("stroke-width", 5); // Increase stroke width here (adjust as needed)
 
   // Create x-axis with only week numbers
   svg
@@ -161,4 +165,3 @@ const Heatmap = () => {
 };
 
 export default Heatmap;
-  
