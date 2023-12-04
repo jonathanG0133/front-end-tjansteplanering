@@ -1,21 +1,24 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import useGetDataApi from "./DataApi";
 
 const Heatmap = () => {
   // Define the number of teachers and weeks
   const numTeachers = 40;
   const numWeeks = 52;
+  const dataApi = useGetDataApi();
 
   // Generate random data for teachers and weeks
   const data = Array.from({ length: numTeachers * numWeeks }, (_, index) => {
     const uniqueValue = Math.random();
+
     return {
       teacher: Math.floor(index / numWeeks), // Assign teachers
       week: index % numWeeks, // Assign weeks
       value: uniqueValue,
     };
   });
-
+  console.log(dataApi);
   // Define the dimensions of the heatmap
   const width = 1400;
   const height = 800; // Increased height to accommodate teacher labels
