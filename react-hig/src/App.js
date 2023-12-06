@@ -5,7 +5,7 @@ import Heatmap from "./Heatmap";
 
 function App() {
   return (
-    <div className="Hig">
+    <div className="heatmap-container">
       <Heatmap />
     </div>
   );

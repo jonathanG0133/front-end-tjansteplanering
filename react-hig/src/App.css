@@ -2,6 +2,13 @@
   text-align: center;
 }
 
+.heatmap-container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100vh; /* Set the height of the container to fill the viewport */
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

@@ -113,7 +113,25 @@ const Heatmap = () => {
     .attr("y1", margin.top)
     .attr("y2", height - margin.bottom)
     .style("stroke", "black")
-    .style("stroke-width", 5); // Increase stroke width here (adjust as needed)
+    .style("stroke-width", 3); // Increase stroke width here (adjust as needed)
+
+  // Text labels for periods
+  const periodText = ["Period 1", "Period 2", "Period 3", "Period 4"];
+
+  svg
+    .selectAll(".period-text")
+    .data(periodText)
+    .enter()
+    .append("text")
+    .attr("class", "period-text")
+    .attr("x", (d, i) => {
+      const sectionWidth = (width - margin.left - margin.right) / 4; // Calculate the width of each section
+      return margin.left + sectionWidth * i + sectionWidth / 2; // Calculate the x-position for each label
+    })
+    .attr("y", margin.top - 30) // Adjust the distance from the top of the heatmap
+    .text((d) => d)
+    .style("text-anchor", "middle")
+    .style("font-style", "italic");
 
   // Create x-axis with only week numbers
   svg
