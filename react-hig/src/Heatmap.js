@@ -1,27 +1,174 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
 const Heatmap = () => {
+  const teachersData = [
+    {
+      id: 1,
+      name: "Test testsson",
+      workPercentages: Array.from({ length: 52 }, () =>
+        Math.floor(Math.random() * 5)
+      ), // Generating 52 random integers between 0 and 4
+      listOfCourses: [
+        {
+          id: 1,
+          name: "Course A",
+          speed: 0.5,
+          timescope: "210101-210601",
+          department: "datavetenskap",
+        },
+        {
+          id: 2,
+          name: "Course B",
+          speed: 0.5,
+          timescope: "210201-210701",
+          department: "datavetenskap",
+        },
+      ],
+      department: "datavetenskap",
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      workPercentages: Array.from({ length: 52 }, () =>
+        Math.floor(Math.random() * 5)
+      ), // Generating 52 random integers between 0 and 4
+      listOfCourses: [
+        {
+          id: 3,
+          name: "Course C",
+          speed: 0.5,
+          timescope: "210301-210801",
+          department: "datavetenskap",
+        },
+        {
+          id: 4,
+          name: "Course D",
+          speed: 0.5,
+          timescope: "210401-210901",
+          department: "datavetenskap",
+        },
+      ],
+      department: "datavetenskap",
+    },
+    {
+      id: 3,
+      name: "Test Test",
+      workPercentages: Array.from({ length: 52 }, () =>
+        Math.floor(Math.random() * 5)
+      ), // Generating 52 random integers between 0 and 4
+      listOfCourses: [
+        {
+          id: 5,
+          name: "Course E",
+          speed: 0.5,
+          timescope: "210301-210801",
+          department: "datavetenskap",
+        },
+        {
+          id: 6,
+          name: "Course F",
+          speed: 0.5,
+          timescope: "210401-210901",
+          department: "datavetenskap",
+        },
+      ],
+      department: "datavetenskap",
+    },
+    {
+      id: 4,
+      name: "Ogaboga hej",
+      workPercentages: Array.from({ length: 52 }, () =>
+        Math.floor(Math.random() * 5)
+      ), // Generating 52 random integers between 0 and 4
+      listOfCourses: [
+        {
+          id: 7,
+          name: "Course G",
+          speed: 0.5,
+          timescope: "210301-210801",
+          department: "datavetenskap",
+        },
+        {
+          id: 8,
+          name: "Course H",
+          speed: 0.5,
+          timescope: "210401-210901",
+          department: "datavetenskap",
+        },
+      ],
+      department: "datavetenskap",
+    },
+    // Add more teachers as needed
+  ];
+
   // Define the number of teachers and weeks
-  const numTeachers = 40;
+  //const numTeachers = 40;
+  const numTeachers = teachersData.length;
   const numWeeks = 52;
   const width = 1200;
 
-  const margin = { top: 60, right: 20, bottom: 60, left: 80 }; // Adjusted margins
+  const margin = { top: 70, right: 20, bottom: 60, left: 200 }; // Adjusted margins
   // Calculate the height based on the number of teachers
   const cellHeight = 15; // Change this value as needed for cell height
   const cellPadding = 2; // Change this value as needed for cell padding
   const height = numTeachers * (cellHeight + cellPadding) + 2 * margin.top;
 
-  // Generate random data for teachers and weeks with the 'value' property
-  const data = Array.from({ length: numTeachers * numWeeks }, (_, index) => {
-    const uniqueValue = Math.floor(Math.random() * 5); // Generates random values from 0 to 4
-    return {
-      teacher: Math.floor(index / numWeeks), // Assign teachers
-      week: index % numWeeks, // Assign weeks
-      value: uniqueValue, // Assign a random value between 0 and 4
-    };
+  const heatmapData = [];
+  teachersData.forEach((teacher, teacherIndex) => {
+    teacher.workPercentages.forEach((value, weekIndex) => {
+      // Push an object for each cell to heatmapData array
+      heatmapData.push({
+        teacher: teacherIndex,
+        week: weekIndex,
+        value: value, // Here, you should use the actual work percentage for the cell value
+      });
+    });
   });
+  const teacherNames = teachersData.map((teacher) => teacher.name);
+
+  // State to hold the selected teacher's data
+  const [selectedTeacher, setSelectedTeacher] = useState(teachersData[0]); // Set the default teacher
+
+  // Handler for teacher click event
+  const handleTeacherClick = (teacherIndex) => {
+    setSelectedTeacher(teacherIndex);
+  };
+
+  // CourseTable component to render teacher's courses
+  const CourseTable = ({ selectedTeacher }) => {
+    if (!selectedTeacher || !selectedTeacher.listOfCourses) {
+      return null;
+    }
+
+    return (
+      <div>
+        <h2>{selectedTeacher.name}'s Courses</h2>
+        <table>
+          {/* Table header */}
+          <thead>
+            <tr>
+              <th>Course Name</th>
+              <th>Speed</th>
+              <th>Time Scope</th>
+              <th>Department</th>
+            </tr>
+          </thead>
+          {/* Table body */}
+          <tbody>
+            {selectedTeacher.listOfCourses.map((course) => (
+              <tr key={course.id}>
+                <td>{course.name}</td>
+                <td>{course.speed}</td>
+                <td>{course.timescope}</td>
+                <td>{course.department}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   // Define the dimensions of the heatmap
 
@@ -85,20 +232,42 @@ const Heatmap = () => {
   // Update the scales for x and y axes using the new height
   const yScale = d3
     .scaleBand()
-    .domain(d3.range(numTeachers))
+    .domain(teacherNames)
     .range([margin.top, height - margin.bottom])
     .padding(cellPadding / (cellHeight + cellPadding));
 
-  // Create the rectangles for the heatmap
   const cells = svg
-    .selectAll("rect")
-    .data(data)
-    .join("rect")
-    .attr("x", (d) => xScale(d.week))
-    .attr("y", (d) => yScale(d.teacher))
+    .selectAll("g")
+    .data(heatmapData) // Use heatmapData here
+    .enter()
+    .append("g")
+    .attr(
+      "transform",
+      (d) => `translate(${xScale(d.week)},${yScale(teacherNames[d.teacher])})`
+    );
+
+  cells
+    .append("rect")
     .attr("width", xScale.bandwidth())
     .attr("height", yScale.bandwidth())
     .attr("fill", (d) => colorScale(d.value));
+
+  const labelWidth = 1; // Increase or decrease this value as needed
+
+  const teacherLabels = svg
+    .selectAll("text.teacher")
+    .data(teachersData)
+    .enter()
+    .append("text")
+    .attr("class", "teacher")
+    .attr("x", margin.left - labelWidth) // Adjust the positioning of the labels
+    .attr("y", (d, i) => yScale(d.name) + yScale.bandwidth() / 2)
+    .attr("dx", "-10px") // Shift the text to the left
+    .attr("text-anchor", "end")
+    .style("font-size", "12px") // Set the font size
+    .text((d) => d.name)
+    .style("cursor", "pointer")
+    .on("click", (d, i) => handleTeacherClick(i));
 
   // Create vertical lines to represent periods
   const periodLines = [13, 26, 39, 52]; // Divide 52 weeks into 4 periods
@@ -147,10 +316,11 @@ const Heatmap = () => {
   // Label for "Week:"
   svg
     .append("text")
-    .attr("x", width / 2)
+    .attr("x", (width - margin.left - margin.right) / 2 + margin.left) // Centering the label
     .attr("y", height - 20)
     .text("Week:")
-    .style("font-weight", "bold");
+    .style("font-weight", "bold")
+    .style("text-anchor", "middle"); // Center the text horizontally
 
   // Label for "Teachers:"
   svg
@@ -161,25 +331,34 @@ const Heatmap = () => {
     .text("Teachers:")
     .style("font-weight", "bold");
 
-  // Create y-axis with teacher labels
-  svg
-    .append("g")
-    .attr("transform", `translate(${margin.left}, 0)`)
-    .call(d3.axisLeft(yScale).tickFormat((d) => `Teacher ${d + 1}`));
-
   // Create a reference to a div element
   const divRef = useRef(null);
 
   // Use the useEffect hook to append the SVG elements to the div element
   useEffect(() => {
     if (divRef.current) {
+      divRef.current.innerHTML = ""; // Clear the content before appending
       divRef.current.appendChild(svg.node());
       divRef.current.appendChild(colorScaleSvg.node());
     }
   }, [divRef, svg, colorScaleSvg]);
 
   // Return the div element as a React component
-  return <div ref={divRef} />;
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
+      {/* Render heatmap */}
+      <div ref={divRef} />
+
+      {/* Render CourseTable component with selected teacher's data */}
+      <div style={{ marginTop: "20px" }}>
+        {" "}
+        {/* Adjust margin as needed */}
+        <CourseTable selectedTeacher={selectedTeacher} />
+      </div>
+    </div>
+  );
 };
 
 export default Heatmap;
