@@ -20,7 +20,7 @@ const Heatmap = () => {
         {
           id: 2,
           name: "Course B",
-          speed: 0.5,
+          speed: 0.6,
           timescope: "210201-210701",
           department: "datavetenskap",
         },
@@ -37,15 +37,15 @@ const Heatmap = () => {
         {
           id: 3,
           name: "Course C",
-          speed: 0.5,
-          timescope: "210301-210801",
+          speed: 0.7,
+          timescope: "210301-345",
           department: "datavetenskap",
         },
         {
           id: 4,
           name: "Course D",
-          speed: 0.5,
-          timescope: "210401-210901",
+          speed: 0.8,
+          timescope: "678-210901",
           department: "datavetenskap",
         },
       ],
@@ -61,15 +61,15 @@ const Heatmap = () => {
         {
           id: 5,
           name: "Course E",
-          speed: 0.5,
-          timescope: "210301-210801",
+          speed: 0.9,
+          timescope: "210301-267867810801",
           department: "datavetenskap",
         },
         {
           id: 6,
           name: "Course F",
-          speed: 0.5,
-          timescope: "210401-210901",
+          speed: 0.1,
+          timescope: "6324-210901",
           department: "datavetenskap",
         },
       ],
@@ -85,15 +85,15 @@ const Heatmap = () => {
         {
           id: 7,
           name: "Course G",
-          speed: 0.5,
-          timescope: "210301-210801",
+          speed: 0.11,
+          timescope: "123213-210801",
           department: "datavetenskap",
         },
         {
           id: 8,
           name: "Course H",
-          speed: 0.5,
-          timescope: "210401-210901",
+          speed: 0.12,
+          timescope: "6136-210901",
           department: "datavetenskap",
         },
       ],
@@ -128,22 +128,65 @@ const Heatmap = () => {
   const teacherNames = teachersData.map((teacher) => teacher.name);
 
   // State to hold the selected teacher's data
-  const [selectedTeacher, setSelectedTeacher] = useState(teachersData[0]); // Set the default teacher
+  const [selectedTeacher, setSelectedTeacher] = useState(null); // Set the default teacher
 
   // Handler for teacher click event
   const handleTeacherClick = (teacherIndex) => {
     setSelectedTeacher(teacherIndex);
   };
+  const CourseTable = ({ selectedTeacher, setSelectedTeacher }) => {
+    const allCourses = teachersData.flatMap((teacher) =>
+      teacher.listOfCourses.map((course) => ({
+        ...course,
+        teacherName: teacher.name,
+      }))
+    );
 
-  // CourseTable component to render teacher's courses
-  const CourseTable = ({ selectedTeacher }) => {
-    if (!selectedTeacher || !selectedTeacher.listOfCourses) {
+    const handleReset = () => {
+      setSelectedTeacher(null);
+    };
+
+    if (selectedTeacher === null) {
+      return (
+        <div>
+          <h2>All Teachers' Courses</h2>
+          <button onClick={handleReset}>Reset Selected Teacher</button>
+          <table>
+            {/* Table header */}
+            <thead>
+              <tr>
+                <th>Teacher</th>
+                <th>Course Name</th>
+                <th>Speed</th>
+                <th>Time Scope</th>
+                <th>Department</th>
+              </tr>
+            </thead>
+            {/* Table body */}
+            <tbody>
+              {allCourses.map((course, index) => (
+                <tr key={index}>
+                  <td>{course.teacherName}</td>
+                  <td>{course.name}</td>
+                  <td>{course.speed}</td>
+                  <td>{course.timescope}</td>
+                  <td>{course.department}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    if (!selectedTeacher.listOfCourses) {
       return null;
     }
 
     return (
       <div>
         <h2>{selectedTeacher.name}'s Courses</h2>
+        <button onClick={handleReset}>Reset Selected Teacher</button>
         <table>
           {/* Table header */}
           <thead>
@@ -355,7 +398,10 @@ const Heatmap = () => {
       <div style={{ marginTop: "20px" }}>
         {" "}
         {/* Adjust margin as needed */}
-        <CourseTable selectedTeacher={selectedTeacher} />
+        <CourseTable
+          selectedTeacher={selectedTeacher}
+          setSelectedTeacher={setSelectedTeacher}
+        />
       </div>
     </div>
   );
