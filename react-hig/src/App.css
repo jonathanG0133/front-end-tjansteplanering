@@ -1,7 +1,10 @@
 .App {
   text-align: center;
 }
-
+body {
+  background-color: #f5f5f5; /* Your desired light grey color */
+  /* Other global styles */
+}
 .heatmap-container {
   display: flex;
   justify-content: center; /* Center horizontally */

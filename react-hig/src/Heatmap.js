@@ -45,7 +45,7 @@ const Heatmap = () => {
   const colorScale = d3
     .scaleOrdinal()
     .domain([0, 1, 2, 3, 4])
-    .range(["red", "orange", "green", "cyan", "blue"]);
+    .range(["#ea4e51", "#fdae61", "#8abf86", "#5aa7d1", "#2b83ba"]);
 
   // Calculate the total height occupied by the squares
   const totalColorScaleHeight = colorLabels.length * 50; // Assuming each square is 50 units tall
@@ -113,7 +113,7 @@ const Heatmap = () => {
     .attr("y1", margin.top)
     .attr("y2", height - margin.bottom)
     .style("stroke", "black")
-    .style("stroke-width", 3); // Increase stroke width here (adjust as needed)
+    .style("stroke-width", 1.5); // Increase stroke width here (adjust as needed)
 
   // Text labels for periods
   const periodText = ["Period 1", "Period 2", "Period 3", "Period 4"];
