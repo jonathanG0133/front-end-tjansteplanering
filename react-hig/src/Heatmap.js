@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import CourseTable from "./CourseTable";
 
 const Heatmap = () => {
   const teachersData = [
@@ -106,7 +107,7 @@ const Heatmap = () => {
   //const numTeachers = 40;
   const numTeachers = teachersData.length;
   const numWeeks = 52;
-  const width = 1200;
+  const width = 1000;
 
   const margin = { top: 70, right: 20, bottom: 60, left: 200 }; // Adjusted margins
   // Calculate the height based on the number of teachers
@@ -129,88 +130,25 @@ const Heatmap = () => {
 
   // State to hold the selected teacher's data
   const [selectedTeacher, setSelectedTeacher] = useState(null); // Set the default teacher
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipContent, setTooltipContent] = useState("");
+
+  // Create a reference for the tooltip div
+  const tooltipRef = useRef(null);
+
+  // Function to handle cell click event
+  const handleCellClick = (teacherIndex) => {
+    setSelectedTeacher(teachersData[teacherIndex]); // Set the entire teacher object
+    setTooltipVisible(true);
+    setTooltipContent(
+      teachersData[teacherIndex].name,
+      teachersData[teacherIndex].workPercentages
+    );
+  };
 
   // Handler for teacher click event
   const handleTeacherClick = (teacherIndex) => {
     setSelectedTeacher(teacherIndex);
-  };
-  const CourseTable = ({ selectedTeacher, setSelectedTeacher }) => {
-    const allCourses = teachersData.flatMap((teacher) =>
-      teacher.listOfCourses.map((course) => ({
-        ...course,
-        teacherName: teacher.name,
-      }))
-    );
-
-    const handleReset = () => {
-      setSelectedTeacher(null);
-    };
-
-    if (selectedTeacher === null) {
-      return (
-        <div>
-          <h2>All Teachers' Courses</h2>
-          <button onClick={handleReset}>Reset Selected Teacher</button>
-          <table>
-            {/* Table header */}
-            <thead>
-              <tr>
-                <th>Teacher</th>
-                <th>Course Name</th>
-                <th>Speed</th>
-                <th>Time Scope</th>
-                <th>Department</th>
-              </tr>
-            </thead>
-            {/* Table body */}
-            <tbody>
-              {allCourses.map((course, index) => (
-                <tr key={index}>
-                  <td>{course.teacherName}</td>
-                  <td>{course.name}</td>
-                  <td>{course.speed}</td>
-                  <td>{course.timescope}</td>
-                  <td>{course.department}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-    }
-
-    if (!selectedTeacher.listOfCourses) {
-      return null;
-    }
-
-    return (
-      <div>
-        <h2>{selectedTeacher.name}'s Courses</h2>
-        <button onClick={handleReset}>Reset Selected Teacher</button>
-        <table>
-          {/* Table header */}
-          <thead>
-            <tr>
-              <th>Course Name</th>
-              <th>Speed</th>
-              <th>Time Scope</th>
-              <th>Department</th>
-            </tr>
-          </thead>
-          {/* Table body */}
-          <tbody>
-            {selectedTeacher.listOfCourses.map((course) => (
-              <tr key={course.id}>
-                <td>{course.name}</td>
-                <td>{course.speed}</td>
-                <td>{course.timescope}</td>
-                <td>{course.department}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
   };
 
   // Define the dimensions of the heatmap
@@ -223,11 +161,11 @@ const Heatmap = () => {
     .attr("viewBox", [0, 0, width, height]);
 
   // Add labels for the color scale
-  const colorLabels = ["150", "120", "100", "80", "60"];
+  const colorLabels = ["130", "110", "90", "70", "50"];
   // Create a separate SVG for the color scale
   const colorScaleSvg = d3
     .create("svg")
-    .attr("width", 50) // Increased width to accommodate labels
+    .attr("width", 40) // Increased width to accommodate labels
     .attr("height", height)
     .attr("viewBox", [0, 0, 70, height]);
 
@@ -279,6 +217,13 @@ const Heatmap = () => {
     .range([margin.top, height - margin.bottom])
     .padding(cellPadding / (cellHeight + cellPadding));
 
+  const tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  // Add event handlers to cells for tooltip display
   const cells = svg
     .selectAll("g")
     .data(heatmapData) // Use heatmapData here
@@ -293,7 +238,28 @@ const Heatmap = () => {
     .append("rect")
     .attr("width", xScale.bandwidth())
     .attr("height", yScale.bandwidth())
-    .attr("fill", (d) => colorScale(d.value));
+    .attr("fill", (d) => colorScale(d.value))
+    .on("mouseover", (event, d) => {
+      // Show tooltip on mouseover
+      tooltipRef.current.style.left = event.pageX - 340 + "px";
+      tooltipRef.current.style.top = event.pageY - 120 + "px";
+
+      const teacherName = teachersData[d.teacher].name;
+      const workloadPercentage =
+        teachersData[d.teacher].workPercentages[d.week];
+      setTooltipContent(
+        `Teacher: ${teacherName} Workload Percentage: ${workloadPercentage}`
+      );
+      setTooltipVisible(true);
+    })
+    .on("mouseout", () => {
+      // Hide tooltip on mouseout
+      setTooltipVisible(false);
+    })
+    .on("click", (event, d) => {
+      // Handle cell click event
+      handleCellClick(d.teacher);
+    });
 
   const labelWidth = 1; // Increase or decrease this value as needed
 
@@ -313,7 +279,7 @@ const Heatmap = () => {
     .on("click", (d, i) => handleTeacherClick(i));
 
   // Create vertical lines to represent periods
-  const periodLines = [13, 26, 39, 52]; // Divide 52 weeks into 4 periods
+  const periodLines = [3, 13, 23, 34, 44]; // Divide 52 weeks into 4 periods
   svg
     .selectAll(".period-line")
     .data(periodLines)
@@ -328,7 +294,7 @@ const Heatmap = () => {
     .style("stroke-width", 1.5); // Increase stroke width here (adjust as needed)
 
   // Text labels for periods
-  const periodText = ["Period 1", "Period 2", "Period 3", "Period 4"];
+  const periodText = ["Period 1", "Period 2", "Sommar", "Period 3", "Period 4"];
 
   svg
     .selectAll(".period-text")
@@ -337,8 +303,8 @@ const Heatmap = () => {
     .append("text")
     .attr("class", "period-text")
     .attr("x", (d, i) => {
-      const sectionWidth = (width - margin.left - margin.right) / 4; // Calculate the width of each section
-      return margin.left + sectionWidth * i + sectionWidth / 2; // Calculate the x-position for each label
+      const sectionWidth = (width - margin.left - margin.right) / 5; // Calculate the width of each section
+      return margin.left + sectionWidth * i + sectionWidth / 1.4; // Calculate the x-position for each label
     })
     .attr("y", margin.top - 30) // Adjust the distance from the top of the heatmap
     .text((d) => d)
@@ -386,13 +352,34 @@ const Heatmap = () => {
     }
   }, [divRef, svg, colorScaleSvg]);
 
+  const tooltipStyle = {
+    display: tooltipVisible ? "block" : "none",
+    position: "absolute",
+    background: "white",
+    border: "1px solid #ccc",
+    padding: "5px",
+    zIndex: 9999, // Ensure it's on top of other elements
+    minWidth: "200px", // Minimum width
+    maxWidth: "200px",
+    maxHeight: "500px", // Adjust the maxHeight to make the tooltip smaller
+  };
+
   // Return the div element as a React component
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        position: "relative",
+      }}
     >
       {/* Render heatmap */}
       <div ref={divRef} />
+      {/* Tooltip */}
+      <div ref={tooltipRef} style={tooltipStyle}>
+        {tooltipContent}
+      </div>
 
       {/* Render CourseTable component with selected teacher's data */}
       <div style={{ marginTop: "20px" }}>
@@ -401,6 +388,7 @@ const Heatmap = () => {
         <CourseTable
           selectedTeacher={selectedTeacher}
           setSelectedTeacher={setSelectedTeacher}
+          teachersData={teachersData}
         />
       </div>
     </div>
