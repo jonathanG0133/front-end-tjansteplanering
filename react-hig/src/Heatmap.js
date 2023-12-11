@@ -105,6 +105,7 @@ const Heatmap = () => {
 
   // Define the number of teachers and weeks
   //const numTeachers = 40;
+
   const numTeachers = teachersData.length;
   const numWeeks = 52;
   const width = 1000;
@@ -126,6 +127,15 @@ const Heatmap = () => {
       });
     });
   });
+
+  const heatmapTotalHeight = height + margin.top; // Add the top margin
+
+  // Dynamically set the heatmap height to occupy space below the 100px margin
+  const heatmapStyle = {
+    marginTop: "100px", // Set the margin from the top
+    height: `calc(100vh - 100px)`, // Calculate the height based on viewport height minus the top margin
+    overflowY: "auto", // Add vertical scroll when the content exceeds the viewport height
+  };
   const teacherNames = teachersData.map((teacher) => teacher.name);
 
   // State to hold the selected teacher's data
@@ -151,6 +161,9 @@ const Heatmap = () => {
     setSelectedTeacher(teacherIndex);
   };
 
+  const handleMouseOut = () => {
+    setTooltipVisible(false);
+  };
   // Define the dimensions of the heatmap
 
   // Update the heatmap SVG's height
@@ -241,8 +254,8 @@ const Heatmap = () => {
     .attr("fill", (d) => colorScale(d.value))
     .on("mouseover", (event, d) => {
       // Show tooltip on mouseover
-      tooltipRef.current.style.left = event.pageX - 340 + "px";
-      tooltipRef.current.style.top = event.pageY - 120 + "px";
+      tooltipRef.current.style.left = event.pageX - 250 + "px";
+      tooltipRef.current.style.top = event.pageY - 160 + "px";
 
       const teacherName = teachersData[d.teacher].name;
       const workloadPercentage =
@@ -343,6 +356,18 @@ const Heatmap = () => {
   // Create a reference to a div element
   const divRef = useRef(null);
 
+  useEffect(() => {
+    if (svg && svg.node()) {
+      svg.node().addEventListener("mouseout", handleMouseOut);
+    }
+
+    // Clean up the event listener on unmount or changes
+    return () => {
+      if (svg && svg.node()) {
+        svg.node().removeEventListener("mouseout", handleMouseOut);
+      }
+    };
+  }, [svg]);
   // Use the useEffect hook to append the SVG elements to the div element
   useEffect(() => {
     if (divRef.current) {
@@ -366,30 +391,33 @@ const Heatmap = () => {
 
   // Return the div element as a React component
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        position: "relative",
-      }}
-    >
-      {/* Render heatmap */}
-      <div ref={divRef} />
-      {/* Tooltip */}
-      <div ref={tooltipRef} style={tooltipStyle}>
-        {tooltipContent}
-      </div>
-
-      {/* Render CourseTable component with selected teacher's data */}
-      <div style={{ marginTop: "20px" }}>
+    <div style={heatmapStyle}>
+      {/* Existing heatmap content */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          position: "relative",
+        }}
+      >
         {" "}
-        {/* Adjust margin as needed */}
-        <CourseTable
-          selectedTeacher={selectedTeacher}
-          setSelectedTeacher={setSelectedTeacher}
-          teachersData={teachersData}
-        />
+        {/* Render heatmap */}
+        <div ref={divRef} />
+        {/* Tooltip */}
+        <div ref={tooltipRef} style={tooltipStyle}>
+          {tooltipContent}
+        </div>
+        {/* Render CourseTable component with selected teacher's data */}
+        <div style={{ marginTop: "20px" }}>
+          {" "}
+          {/* Adjust margin as needed */}
+          <CourseTable
+            selectedTeacher={selectedTeacher}
+            setSelectedTeacher={setSelectedTeacher}
+            teachersData={teachersData}
+          />
+        </div>
       </div>
     </div>
   );
