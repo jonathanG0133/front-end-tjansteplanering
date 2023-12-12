@@ -6,7 +6,7 @@ const Heatmap = () => {
   const teachersData = [
     {
       id: 1,
-      name: "Test testsson",
+      name: "Test Testsson",
       workPercentages: Array.from({ length: 52 }, () =>
         Math.floor(Math.random() * 5)
       ), // Generating 52 random integers between 0 and 4
@@ -217,7 +217,6 @@ const Heatmap = () => {
     setTooltipContent(""); // Clear tooltip content
   };
 
-
   const handleMouseOut = () => {
     setTooltipVisible(false);
   };
@@ -345,7 +344,7 @@ const Heatmap = () => {
     .enter()
     .append("text")
     .attr("class", "teacher")
-    .attr("x", margin.left - labelWidth) // Adjust the positioning of the labels
+    .attr("x", margin.left + labelWidth) // Adjust the positioning of the labels
     .attr("y", (d, i) => yScale(d.name) + yScale.bandwidth() / 2)
     .attr("dx", "-10px") // Shift the text to the left
     .attr("text-anchor", "end")
@@ -411,7 +410,7 @@ const Heatmap = () => {
   svg
     .append("text")
     .attr("y", margin.top - 15)
-    .attr("x", margin.left - 30)
+    .attr("x", margin.left - 100)
     .style("text-anchor", "middle")
     .text("Teachers:")
     .style("font-weight", "bold");
