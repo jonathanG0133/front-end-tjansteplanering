@@ -6,7 +6,7 @@ const Heatmap = () => {
   const teachersData = [
     {
       id: 1,
-      name: "Test testsson",
+      name: " Hejsaon Aapwdok",
       workPercentages: Array.from({ length: 52 }, () =>
         Math.floor(Math.random() * 5)
       ), // Generating 52 random integers between 0 and 4
@@ -142,6 +142,7 @@ const Heatmap = () => {
   const [selectedTeacher, setSelectedTeacher] = useState(null); // Set the default teacher
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipContent, setTooltipContent] = useState("");
+  const [tooltipData, setTooltipData] = useState(null);
 
   // Create a reference for the tooltip div
   const tooltipRef = useRef(null);
@@ -263,12 +264,16 @@ const Heatmap = () => {
       tooltipRef.current.style.left = xPercentage;
       tooltipRef.current.style.top = yPercentage;
 
-      const teacherName = teachersData[d.teacher].name;
-      const workloadPercentage =
-        teachersData[d.teacher].workPercentages[d.week];
-      setTooltipContent(
-        `Teacher: ${teacherName} Workload Percentage: ${workloadPercentage}`
-      );
+      const teacher = teachersData[d.teacher];
+      const teacherName = teacher.name;
+      const workloadPercentage = teacher.workPercentages[d.week];
+
+      const tooltipData = {
+        "Name: ": teacherName,
+        "Workload: ": workloadPercentage + "%",
+      };
+
+      setTooltipData(tooltipData);
       setTooltipVisible(true);
     })
     .on("mouseout", () => {
@@ -411,7 +416,18 @@ const Heatmap = () => {
         <div ref={divRef} />
         {/* Tooltip */}
         <div ref={tooltipRef} style={tooltipStyle}>
-          {tooltipContent}
+          {tooltipData && (
+            <table>
+              <tbody>
+                {Object.entries(tooltipData).map(([key, value]) => (
+                  <tr key={key}>
+                    <td>{key}</td>
+                    <td>{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
         {/* Render CourseTable component with selected teacher's data */}
         <div style={{ marginTop: "20px" }}>
