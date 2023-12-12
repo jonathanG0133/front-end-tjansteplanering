@@ -1,74 +1,71 @@
-const CourseTable = ({ selectedTeacher, setSelectedTeacher, teachersData }) => {
-  const allCourses = teachersData.flatMap((teacher) =>
-    teacher.listOfCourses.map((course) => ({
-      ...course,
-      teacherName: teacher.name,
-    }))
-  );
+import React from "react";
 
-  const handleReset = () => {
-    setSelectedTeacher(null);
+const CourseTable = ({ selectedTeacher, teachersData }) => {
+  const isFlagRed = (hanterad) => {
+    // Define your logic here for determining if the flag is red
+    // For example, you can check if hanterad is "Ja" or use any other condition
+    return hanterad === "Nej";
   };
 
-  if (selectedTeacher === null) {
-    return (
-      <div>
-        <h2>All Teachers Courses</h2>
-        <button onClick={handleReset}>Reset Selected Teacher</button>
-        <table>
-          {/* Table header */}
-          <thead>
-            <tr>
-              <th>Teacher</th>
-              <th>Course Name</th>
-              <th>Speed</th>
-              <th>Time Scope</th>
-              <th>Department</th>
-            </tr>
-          </thead>
-          {/* Table body */}
-          <tbody>
-            {allCourses.map((course, index) => (
-              <tr key={index}>
-                <td>{course.teacherName}</td>
-                <td>{course.name}</td>
-                <td>{course.speed}</td>
-                <td>{course.timescope}</td>
-                <td>{course.department}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  if (!selectedTeacher || !selectedTeacher.listOfCourses) {
-    return null;
-  }
+  // Display courses for the selected teacher, or for all teachers if none is selected
+  const coursesToDisplay = selectedTeacher
+    ? selectedTeacher.listOfCourses
+    : teachersData.flatMap((teacher) => teacher.listOfCourses);
 
   return (
     <div>
-      <h2>{selectedTeacher.name}'s Courses</h2>
-      <button onClick={handleReset}>Reset Selected Teacher</button>
-      <table>
-        {/* Table header */}
+      <h3>
+        Courses {selectedTeacher ? `for ${selectedTeacher.name}` : "for All Teachers"}
+      </h3>
+      <table border="1">
         <thead>
-          <tr>
-            <th>Course Name</th>
-            <th>Speed</th>
-            <th>Time Scope</th>
-            <th>Department</th>
-          </tr>
+          {selectedTeacher && (
+            <tr>
+              <th>Course Name</th>
+              <th>Size</th>
+              <th>Students</th>
+              <th>Distributed Days</th>
+              <th>Number of Teachers</th>
+              <th>Year Load</th>
+              <th>Speed</th>
+              <th>Timescope</th>
+              <th>Department</th>
+              <th>Hanterad</th>
+            </tr>
+          )}
+          {!selectedTeacher && (
+            <tr>
+              <th>Course Name</th>
+              <th>Size</th>
+              <th>Students</th>
+              <th>Distributed Days</th>
+              <th>Number of Teachers</th>
+              <th>Year Load</th>
+              <th>Speed</th>
+              <th>Timescope</th>
+              <th>Department</th>
+              <th>Hanterad</th>
+            </tr>
+          )}
         </thead>
-        {/* Table body */}
         <tbody>
-          {selectedTeacher.listOfCourses.map((course) => (
-            <tr key={course.id}>
+          {coursesToDisplay.map((course, index) => (
+            <tr
+              key={index}
+              style={{
+                backgroundColor: isFlagRed(course.hanterad) ? "#ffcccc" : "white",
+              }}
+            >
               <td>{course.name}</td>
+              <td>{course.size}</td>
+              <td>{course.students}</td>
+              <td>{course.distributedDays}</td>
+              <td>{course.numberOfTeachers}</td>
+              <td>{course.yearLoad}</td>
               <td>{course.speed}</td>
               <td>{course.timescope}</td>
               <td>{course.department}</td>
+              <td>{course.hanterad}</td> {/* Change flag to hanterad here */}
             </tr>
           ))}
         </tbody>
