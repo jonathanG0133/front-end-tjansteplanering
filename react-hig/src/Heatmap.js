@@ -156,7 +156,7 @@ const Heatmap = () => {
 
   const numTeachers = teachersData.length;
   const numWeeks = 52;
-  const width = 1000;
+  const width = Math.floor(window.innerWidth * 0.75); // 90% of window width
 
   const margin = { top: 70, right: 20, bottom: 60, left: 200 }; // Adjusted margins
   // Calculate the height based on the number of teachers
@@ -311,8 +311,14 @@ const Heatmap = () => {
     .attr("fill", (d) => colorScale(d.value))
     .on("mouseover", (event, d) => {
       // Show tooltip on mouseover
-      tooltipRef.current.style.left = event.pageX - 250 + "px";
-      tooltipRef.current.style.top = event.pageY - 160 + "px";
+      const containerWidth = divRef.current.offsetWidth;
+      const containerHeight = divRef.current.offsetHeight;
+
+      const xPercentage = (event.pageX / containerWidth) * 80 + "%";
+      const yPercentage = (event.pageY / containerHeight) * 10 + "%";
+
+      tooltipRef.current.style.left = xPercentage;
+      tooltipRef.current.style.top = yPercentage;
 
       const teacherName = teachersData[d.teacher].name;
       const workloadPercentage =
@@ -447,7 +453,7 @@ const Heatmap = () => {
   };
 
   return (
-    <div style={heatmapStyle}>
+    <div style={{ width: "90%", margin: "0 auto" }}>
       {/* Existing heatmap content */}
       <div
         style={{
