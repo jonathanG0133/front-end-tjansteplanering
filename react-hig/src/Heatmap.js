@@ -205,9 +205,18 @@ const Heatmap = () => {
   };
 
   // Handler for teacher click event
+  // Handler for teacher click event
   const handleTeacherClick = (teacherIndex) => {
     setSelectedTeacher(teacherIndex);
   };
+
+  // Handler for restart button click event
+  const handleRestartClick = () => {
+    setSelectedTeacher(null); // Reset selected teacher to show all courses for all teachers
+    setTooltipVisible(false); // Hide tooltip
+    setTooltipContent(""); // Clear tooltip content
+  };
+
 
   const handleMouseOut = () => {
     setTooltipVisible(false);
@@ -437,7 +446,6 @@ const Heatmap = () => {
     maxHeight: "500px", // Adjust the maxHeight to make the tooltip smaller
   };
 
-  // Return the div element as a React component
   return (
     <div style={heatmapStyle}>
       {/* Existing heatmap content */}
@@ -449,7 +457,6 @@ const Heatmap = () => {
           position: "relative",
         }}
       >
-        {" "}
         {/* Render heatmap */}
         <div ref={divRef} />
         {/* Tooltip */}
@@ -458,14 +465,16 @@ const Heatmap = () => {
         </div>
         {/* Render CourseTable component with selected teacher's data */}
         <div style={{ marginTop: "20px" }}>
-          {" "}
           {/* Adjust margin as needed */}
           <CourseTable
             selectedTeacher={selectedTeacher}
-            setSelectedTeacher={setSelectedTeacher}
             teachersData={teachersData}
           />
         </div>
+        {/* Restart button */}
+        <button onClick={handleRestartClick} style={{ marginTop: "20px" }}>
+          Restart To All Courses
+        </button>
       </div>
     </div>
   );
