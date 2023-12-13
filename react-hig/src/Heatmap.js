@@ -1,8 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import CourseTable from "./CourseTable";
+import useGetDataApi from "./DataApi";
 
 const Heatmap = () => {
+  const data1 = useGetDataApi(
+    "http://localhost:8080/courseInstance/getByYear?year=2023"
+  );
+  console.log(data1);
   const teachersData = [
     {
       id: 1,
