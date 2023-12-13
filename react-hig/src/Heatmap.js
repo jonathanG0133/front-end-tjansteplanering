@@ -11,7 +11,7 @@ const Heatmap = () => {
     "http://localhost:8080/commitment/getInfoForAllStaffWithCode"
   );
 
-  console.log(data1);
+  console.log(courseInstances);
   const teachersData = [
     {
       id: 1,
