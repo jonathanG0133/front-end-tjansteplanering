@@ -4,9 +4,13 @@ import CourseTable from "./CourseTable";
 import useGetDataApi from "./DataApi";
 
 const Heatmap = () => {
-  const data1 = useGetDataApi(
+  const courseInstances = useGetDataApi(
     "http://localhost:8080/courseInstance/getByYear?year=2023"
   );
+  const heatmapValues = useGetDataApi(
+    "http://localhost:8080/commitment/getInfoForAllStaffWithCode"
+  );
+
   console.log(data1);
   const teachersData = [
     {
