@@ -1,6 +1,6 @@
 const CourseTable = ({ selectedTeacher, setSelectedTeacher, teachersData }) => {
   const allCourses = teachersData.flatMap((teacher) =>
-    teacher.listOfCourses.map((course) => ({
+    teacher.courseInstances.map((course) => ({
       ...course,
       teacherName: teacher.name,
     }))
