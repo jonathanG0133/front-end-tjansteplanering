@@ -1,74 +1,70 @@
-const CourseTable = ({ selectedTeacher, setSelectedTeacher, teachersData }) => {
-  const allCourses = teachersData.flatMap((teacher) =>
-    teacher.courseInstances.map((course) => ({
-      ...course,
-      teacherName: teacher.name,
-    }))
-  );
+import { useState } from "react";
+import "./CourseTable.css";
 
-  const handleReset = () => {
-    setSelectedTeacher(null);
+const CourseTable = ({ selectedStaff, courseInstanceData }) => {
+  const [showInfo, setShowInfo] = useState(false);
+
+  // Use courseInstanceData if no staff is selected, otherwise use staff's courses
+  const coursesToShow = selectedStaff
+    ? selectedStaff.courseInstances.map((courseInstance) => ({
+        ...courseInstance,
+        courseName: courseInstance.course.name,
+      }))
+    : courseInstanceData.map((courseInstance) => ({
+        ...courseInstance,
+        courseName: courseInstance.course.name,
+      }));
+
+  const getRowClass = (course) => {
+    if (course.task.isCancelled === 1) {
+      return "row-grey";
+    } else if (course.task.isHandled === 0) {
+      return "row-red";
+    }
+    return "";
   };
-
-  if (selectedTeacher === null) {
-    return (
-      <div>
-        <h2>All Teachers Courses</h2>
-        <button onClick={handleReset}>Reset Selected Teacher</button>
-        <table>
-          {/* Table header */}
-          <thead>
-            <tr>
-              <th>Teacher</th>
-              <th>Course Name</th>
-              <th>Speed</th>
-              <th>Time Scope</th>
-              <th>Department</th>
-            </tr>
-          </thead>
-          {/* Table body */}
-          <tbody>
-            {allCourses.map((course, index) => (
-              <tr key={index}>
-                <td>{course.teacherName}</td>
-                <td>{course.name}</td>
-                <td>{course.speed}</td>
-                <td>{course.timescope}</td>
-                <td>{course.department}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  if (!selectedTeacher || !selectedTeacher.listOfCourses) {
-    return null;
-  }
 
   return (
     <div>
-      <h2>{selectedTeacher.name}'s Courses</h2>
-      <button onClick={handleReset}>Reset Selected Teacher</button>
+      <div className="header-container">
+        <h2>
+          {selectedStaff ? `${selectedStaff.name}'s Courses` : "All Courses"}
+        </h2>
+        <button
+          className="info-button"
+          onMouseEnter={() => setShowInfo(true)}
+          onMouseLeave={() => setShowInfo(false)}
+          aria-label="Information"
+        >
+          ?
+        </button>
+      </div>
+      <div className={`info-modal ${showInfo ? "show" : ""}`}>
+        <div id="cancelled">
+          <p>Not Handled</p>
+        </div>
+        <div id="handled">
+          <p>Cancelled</p>
+        </div>
+      </div>
       <table>
-        {/* Table header */}
         <thead>
           <tr>
+            <th>Course ID</th>
             <th>Course Name</th>
             <th>Speed</th>
-            <th>Time Scope</th>
-            <th>Department</th>
+            <th>Students</th>
+            <th>Start:End-Date</th>
           </tr>
         </thead>
-        {/* Table body */}
         <tbody>
-          {selectedTeacher.listOfCourses.map((course) => (
-            <tr key={course.id}>
-              <td>{course.name}</td>
+          {coursesToShow.map((course, index) => (
+            <tr key={index} className={getRowClass(course)}>
+              <td>{course.courseInstanceId}</td>
+              <td>{course.courseName}</td>
               <td>{course.speed}</td>
-              <td>{course.timescope}</td>
-              <td>{course.department}</td>
+              <td>{course.students}</td>
+              <td>{course.task.timescope}</td>
             </tr>
           ))}
         </tbody>
