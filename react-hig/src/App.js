@@ -1,14 +1,23 @@
-import logo from "./logo.svg";
-import "./App.css";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Heatmap from "./Heatmap";
+import SortingWidgets from "./SortingWidgets";
 
 function App() {
+  const [inputText, setInputText] = useState('');
+
+  const handleTextChange = (text) => {
+      setInputText(text);
+  };
+
   return (
-    <div className="heatmap-container">
-      <Heatmap />
-    </div>
-  );
+        <div class="heatmap-container">
+            <SortingWidgets id="widget"
+                inputText={inputText} 
+                onInputChange={handleTextChange} 
+            />
+            <Heatmap inputText={inputText} />
+        </div>
+    );
 }
 
 export default App;

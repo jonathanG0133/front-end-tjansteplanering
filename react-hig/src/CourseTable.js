@@ -40,10 +40,10 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
         </button>
       </div>
       <div className={`info-modal ${showInfo ? "show" : ""}`}>
-        <div id="cancelled">
+        <div id="handled">
           <p>Not Handled</p>
         </div>
-        <div id="handled">
+        <div id="cancelled">
           <p>Cancelled</p>
         </div>
       </div>

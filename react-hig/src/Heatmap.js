@@ -18,7 +18,7 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = () => {
+const Heatmap = ({inputText}) => {
   const [staffData, setStaffData] = useState([]);
   const [courseInstanceData, setCourseInstanceData] = useState([]);
   const divRef = useRef(null);
@@ -130,7 +130,11 @@ const Heatmap = () => {
       .on("mouseover", (event, d) => {
         setTooltipVisible(true);
         setTooltipContent(
-          `Teacher: ${d.staffName} Workload Percentage: ${d.workLoad}`
+          <div>
+            Teacher: {d.staffName} <br />
+            Workload Percentage: {d.workLoad} <br />
+            Week: {d.week + 1}
+          </div>
         );
         // Use d3.pointer to get coordinates relative to the SVG container
         const [x, y] = d3.pointer(event, divRef.current);
@@ -227,10 +231,16 @@ const Heatmap = () => {
     divRef.current.appendChild(svg.node());
   };
 
+  if(!inputText) {
+    inputText = new Date().getFullYear();
+  }
+
+  console.log(inputText);
+
   // useEffect hook for fetching staff data
   useEffect(() => {
     fetch(
-      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=2023-01-01&code=7411"
+      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" + inputText + "-01-01&code="
     )
       .then((response) => response.json())
       .then((data) => {
@@ -238,17 +248,17 @@ const Heatmap = () => {
         drawHeatmap(data);
       })
       .catch((error) => console.error("Error fetching data: ", error));
-  }, []);
+  }, [inputText]);
 
   // useEffect hook for fetching course instance data
   useEffect(() => {
-    fetch("http://localhost:8080/courseInstance/getByYear?year=2023")
+    fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data2) => {
         setCourseInstanceData(data2);
       })
       .catch((error) => console.error("Error fetching data: ", error));
-  }, []);
+  }, [inputText]);
   useEffect(() => {
     const handleResize = () => {
       drawHeatmap(staffData);
@@ -303,21 +313,19 @@ const Heatmap = () => {
             padding: "5px",
             zIndex: 9999,
             minWidth: "200px",
-            maxWidth: "200px",
-            maxHeight: "500px",
+            maxWidth: "300px",
           }}
         >
           {tooltipContent}
         </div>
+        <button onClick={handleRestartClick} style={{ marginTop: "20px" }}>
+          Restart To All Courses
+        </button>
 
         <CourseTable
           selectedStaff={selectedStaff}
           courseInstanceData={courseInstanceData}
         />
-
-        <button onClick={handleRestartClick} style={{ marginTop: "20px" }}>
-          Restart To All Courses
-        </button>
       </div>
     </div>
   );
