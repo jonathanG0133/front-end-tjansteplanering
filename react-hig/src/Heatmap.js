@@ -18,7 +18,7 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = ({inputText}) => {
+const Heatmap = ({ inputText }) => {
   const [staffData, setStaffData] = useState([]);
   const [courseInstanceData, setCourseInstanceData] = useState([]);
   const divRef = useRef(null);
@@ -231,7 +231,7 @@ const Heatmap = ({inputText}) => {
     divRef.current.appendChild(svg.node());
   };
 
-  if(!inputText) {
+  if (!inputText) {
     inputText = new Date().getFullYear();
   }
 
@@ -240,7 +240,9 @@ const Heatmap = ({inputText}) => {
   // useEffect hook for fetching staff data
   useEffect(() => {
     fetch(
-      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" + inputText + "-01-01&code="
+      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
+        inputText +
+        "-01-01&code=7411"
     )
       .then((response) => response.json())
       .then((data) => {

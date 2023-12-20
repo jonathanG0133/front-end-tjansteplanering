@@ -3,21 +3,22 @@ import Heatmap from "./Heatmap";
 import SortingWidgets from "./SortingWidgets";
 
 function App() {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
 
   const handleTextChange = (text) => {
-      setInputText(text);
+    setInputText(text);
   };
 
   return (
-        <div class="heatmap-container">
-            <SortingWidgets id="widget"
-                inputText={inputText} 
-                onInputChange={handleTextChange} 
-            />
-            <Heatmap inputText={inputText} />
-        </div>
-    );
+    <div class="heatmap-container">
+      <SortingWidgets
+        id="widget"
+        inputText={inputText}
+        onInputChange={handleTextChange}
+      />
+      <Heatmap inputText={inputText} />
+    </div>
+  );
 }
 
 export default App;
