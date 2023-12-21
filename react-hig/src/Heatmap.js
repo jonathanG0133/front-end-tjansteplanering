@@ -18,7 +18,7 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = ({inputText}) => {
+const Heatmap = ({ inputText }) => {
   const [staffView, setStaffView] = useState(false);
 
   const [staffData, setStaffData] = useState([]);
@@ -51,12 +51,12 @@ const Heatmap = ({inputText}) => {
 
     const heatmapData = [];
 
-    if(staffView == true) {
+    if (staffView == true) {
       data.forEach((staff) => {
         staff.workLoad.forEach((workLoad, weekIndex) => {
           heatmapData.push({
             staffId: staff.id,
-            staffName: staff.name, 
+            name: staff.name,
             week: weekIndex,
             workLoad: workLoad,
           });
@@ -66,15 +66,13 @@ const Heatmap = ({inputText}) => {
       data.forEach((department) => {
         department.workLoad.forEach((workLoad, weekIndex) => {
           heatmapData.push({
-            departmentName: department.name,
+            name: department.name,
             week: weekIndex,
             workLoad: workLoad,
           });
         });
       });
     }
-    
-    
 
     console.log(heatmapData[5]);
 
@@ -119,13 +117,13 @@ const Heatmap = ({inputText}) => {
       .append("text")
       .attr("y", margin.top - 15)
       .attr("x", margin.left - 100)
-      .text("Staff")
+      .text(staffView ? "Staff" : "Department")
       .style("font-weight", "bold")
       .style("text-anchor", "middle");
 
     const colorScale = d3
       .scaleThreshold()
-      .domain([0.3, 0.5, 0.7, 0.9, 1.1, 1.3]) // Define the threshold values
+      .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
       .range([
         "#C0C0C0",
         "#4E2A84",
@@ -136,13 +134,13 @@ const Heatmap = ({inputText}) => {
         "#ea4e51",
       ]);
 
-      svg
+    svg
       .selectAll(".heat-rect")
       .data(heatmapData)
       .enter()
       .append("rect")
       .attr("x", (d) => xScale(d.week))
-      .attr("y", (d) => yScale(d.departmentName)) // Use the department name for the y-axis
+      .attr("y", (d) => yScale(d.name)) // Use the department name for the y-axis
       .attr("width", xScale.bandwidth())
       .attr("height", yScale.bandwidth())
       .attr("fill", (d) => colorScale(d.workLoad))
@@ -150,7 +148,7 @@ const Heatmap = ({inputText}) => {
         setTooltipVisible(true);
         setTooltipContent(
           <div>
-            Department: {d.departmentName} <br />
+            {staffView ? `Staff: ${d.name}` : `Department: ${d.name}`} <br />
             Workload Percentage: {d.workLoad} <br />
             Week: {d.week + 1}
           </div>
@@ -188,17 +186,19 @@ const Heatmap = ({inputText}) => {
       })
       .on("mouseout", () => setTooltipVisible(false))
       .on("click", (event, d) => {
-        const selectedStaff = data.find((staff) => staff.id === d.staffId);
-        setSelectedStaff(selectedStaff);
+        if (staffView == true) {
+          const selectedStaff = data.find((staff) => staff.id === d.staffId);
+          setSelectedStaff(selectedStaff);
+        }
       });
 
     const legendData = colorScale
       .range()
       .map((color, index) => {
         const d = colorScale.invertExtent(color);
-        if (index === 0) return { range: "< 0.3", color: color };
+        if (index === 0) return { range: "< 30", color: color };
         if (index === colorScale.range().length - 1)
-          return { range: "> 1.3", color: color };
+          return { range: "> 130", color: color };
         return { range: [d[0], d[1]], color: color };
       })
       .reverse();
@@ -250,25 +250,45 @@ const Heatmap = ({inputText}) => {
     divRef.current.appendChild(svg.node());
   };
 
-  if(!inputText) {
+  if (!inputText) {
     inputText = new Date().getFullYear();
   }
 
   console.log(inputText);
 
-  // useEffect hook for fetching staff data
   useEffect(() => {
+    // Fetching staff data
     fetch(
-      "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" + inputText + "-01-01"
+      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
+        inputText +
+        "-01-01&code="
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setStaffData(data);
+        if (staffView) {
+          drawHeatmap(data);
+        }
+      })
+      .catch((error) => console.error("Error fetching staff data: ", error));
+
+    // Fetching department data
+    fetch(
+      "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" +
+        inputText +
+        "-01-01"
     )
       .then((response) => response.json())
       .then((data) => {
         setDepartmentData(data);
-        console.log(data);
-        drawHeatmap(data);
+        if (!staffView) {
+          drawHeatmap(data);
+        }
       })
-      .catch((error) => console.error("Error fetching data: ", error));
-  }, [inputText]);
+      .catch((error) =>
+        console.error("Error fetching department data: ", error)
+      );
+  }, [inputText, staffView]);
 
   // useEffect hook for fetching course instance data
   useEffect(() => {
@@ -279,19 +299,26 @@ const Heatmap = ({inputText}) => {
       })
       .catch((error) => console.error("Error fetching data: ", error));
   }, [inputText]);
+
+  useEffect(() => {
+    if (staffView) {
+      drawHeatmap(staffData);
+    } else {
+      drawHeatmap(departmentData);
+    }
+  }, [staffView, staffData, departmentData]);
+
   useEffect(() => {
     const handleResize = () => {
-      drawHeatmap(staffData);
+      drawHeatmap(staffView ? staffData : departmentData);
     };
 
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
 
-    // Clean up event listener
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [staffData]);
+  }, [staffData, departmentData, staffView]);
 
   const handleRestartClick = () => {
     setSelectedStaff(null);
@@ -317,6 +344,12 @@ const Heatmap = ({inputText}) => {
           width: "100%", // Set the width to 100% of its parent
         }}
       >
+        <button
+          onClick={() => setStaffView(!staffView)}
+          style={{ margin: "10px" }}
+        >
+          {staffView ? "Show Departments" : "Show Staff"}
+        </button>
         <div
           ref={divRef}
           style={{ width: "100%", display: "flex", justifyContent: "center" }}
