@@ -18,8 +18,11 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = ({ inputText }) => {
+const Heatmap = ({inputText}) => {
+  const [staffView, setStaffView] = useState(false);
+
   const [staffData, setStaffData] = useState([]);
+  const [departmentData, setDepartmentData] = useState([]);
   const [courseInstanceData, setCourseInstanceData] = useState([]);
   const divRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -47,16 +50,31 @@ const Heatmap = ({ inputText }) => {
     const width = calculateHeatmapWidth();
 
     const heatmapData = [];
-    data.forEach((staff) => {
-      staff.workLoad.forEach((workLoad, weekIndex) => {
-        heatmapData.push({
-          staffId: staff.id, // Use the staff's ID for mapping data
-          staffName: staff.name, // Include the staff's name for the label
-          week: weekIndex,
-          workLoad: workLoad,
+
+    if(staffView == true) {
+      data.forEach((staff) => {
+        staff.workLoad.forEach((workLoad, weekIndex) => {
+          heatmapData.push({
+            staffId: staff.id,
+            staffName: staff.name, 
+            week: weekIndex,
+            workLoad: workLoad,
+          });
         });
       });
-    });
+    } else {
+      data.forEach((department) => {
+        department.workLoad.forEach((workLoad, weekIndex) => {
+          heatmapData.push({
+            departmentName: department.name,
+            week: weekIndex,
+            workLoad: workLoad,
+          });
+        });
+      });
+    }
+    
+    
 
     console.log(heatmapData[5]);
 
@@ -75,9 +93,10 @@ const Heatmap = ({ inputText }) => {
 
     const yScale = d3
       .scaleBand()
-      .domain(data.map((staff) => staff.name)) // Use staff names for the domain
+      .domain(data.map((entity) => entity.name)) // Use staff names for the domain
       .range([margin.top, height - margin.bottom])
       .padding(cellPadding / (cellHeight + cellPadding));
+
     svg
       .append("g")
       .attr("transform", `translate(0, ${height - margin.bottom})`)
@@ -117,13 +136,13 @@ const Heatmap = ({ inputText }) => {
         "#ea4e51",
       ]);
 
-    svg
+      svg
       .selectAll(".heat-rect")
       .data(heatmapData)
       .enter()
       .append("rect")
       .attr("x", (d) => xScale(d.week))
-      .attr("y", (d) => yScale(d.staffName)) // Use the name to position along the y-axis
+      .attr("y", (d) => yScale(d.departmentName)) // Use the department name for the y-axis
       .attr("width", xScale.bandwidth())
       .attr("height", yScale.bandwidth())
       .attr("fill", (d) => colorScale(d.workLoad))
@@ -131,7 +150,7 @@ const Heatmap = ({ inputText }) => {
         setTooltipVisible(true);
         setTooltipContent(
           <div>
-            Teacher: {d.staffName} <br />
+            Department: {d.departmentName} <br />
             Workload Percentage: {d.workLoad} <br />
             Week: {d.week + 1}
           </div>
@@ -231,7 +250,7 @@ const Heatmap = ({ inputText }) => {
     divRef.current.appendChild(svg.node());
   };
 
-  if (!inputText) {
+  if(!inputText) {
     inputText = new Date().getFullYear();
   }
 
@@ -240,13 +259,12 @@ const Heatmap = ({ inputText }) => {
   // useEffect hook for fetching staff data
   useEffect(() => {
     fetch(
-      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
-        inputText +
-        "-01-01&code=7411"
+      "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" + inputText + "-01-01"
     )
       .then((response) => response.json())
       .then((data) => {
-        setStaffData(data);
+        setDepartmentData(data);
+        console.log(data);
         drawHeatmap(data);
       })
       .catch((error) => console.error("Error fetching data: ", error));
