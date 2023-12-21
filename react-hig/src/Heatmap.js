@@ -149,7 +149,7 @@ const Heatmap = ({ inputText }) => {
         setTooltipContent(
           <div>
             {staffView ? `Staff: ${d.name}` : `Department: ${d.name}`} <br />
-            Workload Percentage: {d.workLoad} <br />
+            Workload Percentage: {d.workLoad} % <br />
             Week: {d.week + 1}
           </div>
         );
