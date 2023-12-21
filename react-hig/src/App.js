@@ -10,7 +10,7 @@ function App() {
   };
 
   return (
-    <div class="heatmap-container">
+    <div className="heatmap-container">
       <SortingWidgets
         id="widget"
         inputText={inputText}
