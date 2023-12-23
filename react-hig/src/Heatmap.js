@@ -6,7 +6,6 @@ import "./Heatmap.css";
 const calculateHeatmapWidth = () => {
   const windowWidth = window.innerWidth;
   let width;
-
   if (windowWidth < 1000) {
     width = windowWidth * 0.95; // 95% of window width for screens smaller than 1000px
   } else if (windowWidth >= 1000 && windowWidth <= 1300) {
@@ -14,13 +13,11 @@ const calculateHeatmapWidth = () => {
   } else {
     width = 1300 * 0.9; // Max width capped at 70% of 1300px for larger screens
   }
-
   return width;
 };
 
 const Heatmap = ({ inputText }) => {
   const [staffView, setStaffView] = useState(false);
-
   const [staffData, setStaffData] = useState([]);
   const [departmentData, setDepartmentData] = useState([]);
   const [courseInstanceData, setCourseInstanceData] = useState([]);
@@ -34,24 +31,27 @@ const Heatmap = ({ inputText }) => {
     if (!divRef.current || !data) {
       return;
     }
-
     // Clear the existing SVG to prevent duplicates
     d3.select(divRef.current).selectAll("svg").remove();
-
     const numStaff = data.length;
     const numWeeks = 52;
     const margin = { top: 70, right: 50, bottom: 60, left: 150 };
     const cellHeight = 15;
     const cellPadding = 2;
+    const legendHeight = 20; // Example height for 7 legend items
+    const minSvgHeight = 300; // Minimum height for the SVG
+
+    // Calculate dynamic height
     const height =
       numStaff * (cellHeight + cellPadding) + margin.top + margin.bottom;
+    const totalHeight = Math.max(height + legendHeight, minSvgHeight);
 
     // Calculate width based on the window size
     const width = calculateHeatmapWidth();
 
     const heatmapData = [];
 
-    if (staffView == true) {
+    if (staffView === true) {
       data.forEach((staff) => {
         staff.workLoad.forEach((workLoad, weekIndex) => {
           heatmapData.push({
@@ -75,13 +75,13 @@ const Heatmap = ({ inputText }) => {
     }
 
     console.log(heatmapData[5]);
-
+    // Create SVG with dynamic height
     const svg = d3
       .select(divRef.current)
       .append("svg")
       .attr("width", width + 100)
-      .attr("height", height)
-      .attr("viewBox", [0, 0, width + 100, height]);
+      .attr("height", totalHeight)
+      .attr("viewBox", [0, 0, width + 100, totalHeight]);
 
     const xScale = d3
       .scaleBand()
@@ -186,7 +186,7 @@ const Heatmap = ({ inputText }) => {
       })
       .on("mouseout", () => setTooltipVisible(false))
       .on("click", (event, d) => {
-        if (staffView == true) {
+        if (staffView === true) {
           const selectedStaff = data.find((staff) => staff.id === d.staffId);
           setSelectedStaff(selectedStaff);
         }
@@ -203,18 +203,18 @@ const Heatmap = ({ inputText }) => {
       })
       .reverse();
     // Draw the color scale legend
-    const legendWidth = 50; // Width of the color scale
-    const legendHeight = 50; // Height of each square in the legend
+    const legendWidth = 70; // Width of the color scale
 
     // Calculate the total height occupied by the legend squares
     const totalColorScaleHeight = legendData.length * legendHeight;
 
     // Calculate the top position for center alignment
-    const topPosition = (height - totalColorScaleHeight) / 2;
+    const topPosition = height - totalColorScaleHeight;
+    const marginTopRight = margin.top - margin.right;
 
     const legend = svg
       .append("g")
-      .attr("transform", `translate(${width + 20}, ${topPosition})`); // Adjust vertical position
+      .attr("transform", `translate(${width + 20}, ${marginTopRight})`); // Adjust vertical position
 
     // Draw color boxes
     legend
@@ -238,8 +238,8 @@ const Heatmap = ({ inputText }) => {
       .attr("dy", "0.35em") // Vertically center the text
       .style("text-anchor", "middle") // Horizontally center the text
       .style("font-size", "10px") // Font size
-      .style("font-weight", "bold") // Make the font bold
-
+      .style("font-weight", "bold")
+      .style("fill", "#f5f5f5") // Make the font bold
       .text((d) =>
         typeof d.range === "string"
           ? d.range
