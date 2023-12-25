@@ -16,11 +16,17 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = ({ inputText }) => {
+const Heatmap = ({ inputText, codeCleared }) => { 
+  if (!inputText) {
+    inputText = new Date().getFullYear();
+  }
+
   const [staffView, setStaffView] = useState(false);
   const [staffData, setStaffData] = useState([]);
   const [departmentData, setDepartmentData] = useState([]);
   const [courseInstanceData, setCourseInstanceData] = useState([]);
+  const [departmentCode, setDepartmentCode] = useState("");
+
   const divRef = useRef(null);
   const tooltipRef = useRef(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
@@ -74,7 +80,6 @@ const Heatmap = ({ inputText }) => {
       });
     }
 
-    console.log(heatmapData[5]);
     // Create SVG with dynamic height
     const svg = d3
       .select(divRef.current)
@@ -91,19 +96,27 @@ const Heatmap = ({ inputText }) => {
 
     const yScale = d3
       .scaleBand()
-      .domain(data.map((entity) => entity.name)) // Use staff names for the domain
+      .domain(data.map((entity) => entity.name))
       .range([margin.top, height - margin.bottom])
       .padding(cellPadding / (cellHeight + cellPadding));
-
-    svg
-      .append("g")
-      .attr("transform", `translate(0, ${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale).tickFormat((d) => d + 1));
-
-    svg
+    
+      const yAxis = svg
       .append("g")
       .attr("transform", `translate(${margin.left}, 0)`)
-      .call(d3.axisLeft(yScale));
+      .call(d3.axisLeft(yScale))
+      .selectAll(".tick text")
+      .style("cursor", "pointer") // Set cursor style;
+    
+    // Add click event handler to y-axis text when staffView is false
+    // Add click event handler to y-axis text when staffView is false
+if (!staffView) {
+  yAxis.on("click", (event, entityClicked) => {
+    console.log(entityClicked);
+    setDepartmentCode(entityClicked);
+    setStaffView(true);
+  });
+}
+
 
     svg
       .append("text")
@@ -153,6 +166,7 @@ const Heatmap = ({ inputText }) => {
             Week: {d.week + 1}
           </div>
         );
+        
         // Use d3.pointer to get coordinates relative to the SVG container
         const [x, y] = d3.pointer(event, divRef.current);
 
@@ -250,47 +264,56 @@ const Heatmap = ({ inputText }) => {
     divRef.current.appendChild(svg.node());
   };
 
-  if (!inputText) {
-    inputText = new Date().getFullYear();
-  }
-
-  console.log(inputText);
-
+  // Fetching staff data START
   useEffect(() => {
-    // Fetching staff data
     fetch(
       "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
         inputText +
-        "-01-01&code="
+        "-01-01&code=" + departmentCode
     )
       .then((response) => response.json())
       .then((data) => {
         setStaffData(data);
         if (staffView) {
-          drawHeatmap(data);
+          console.log("helloo+++o++o+o+o" + departmentCode);
+          drawHeatmap(data); // Use the updated data, not the previous state
         }
       })
       .catch((error) => console.error("Error fetching staff data: ", error));
+  }, [inputText, staffView, departmentCode]);
+  
+  
+  
 
-    // Fetching department data
-    fetch(
-      "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" +
-        inputText +
-        "-01-01"
-    )
-      .then((response) => response.json())
-      .then((data) => {
+  // Fetching department data START
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" +
+            inputText +
+            "-01-01"
+        );
+        const data = await response.json();
+
         setDepartmentData(data);
-        if (!staffView) {
-          drawHeatmap(data);
-        }
-      })
-      .catch((error) =>
-        console.error("Error fetching department data: ", error)
-      );
-  }, [inputText, staffView]);
 
-  // useEffect hook for fetching course instance data
+        // Call drawHeatmap only if data is available and staffView is false
+        if (data && !staffView) {
+        drawHeatmap(data);
+        }
+      } catch (error) {
+      console.error("Error fetching department data: ", error);
+      }
+    };
+
+    fetchData();
+  }, [inputText, staffView]);
+  // Fetching department data END
+
+
+  
+  // Fetching courses data START
   useEffect(() => {
     fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
       .then((response) => response.json())
@@ -321,6 +344,7 @@ const Heatmap = ({ inputText }) => {
   }, [staffData, departmentData, staffView]);
 
   const handleRestartClick = () => {
+    setStaffView(false); // Make sure staff view is set to false
     setSelectedStaff(null);
     setTooltipVisible(false);
     setTooltipContent("");
@@ -344,6 +368,9 @@ const Heatmap = ({ inputText }) => {
           width: "100%", // Set the width to 100% of its parent
         }}
       >
+        <div style={{ marginBottom: "10px", fontSize: "30px" }}>
+          {departmentCode ? `${departmentCode}` : "All Departments"}
+        </div>
         <button
           onClick={() => setStaffView(!staffView)}
           style={{ margin: "10px" }}
@@ -372,7 +399,7 @@ const Heatmap = ({ inputText }) => {
           {tooltipContent}
         </div>
         <button onClick={handleRestartClick} style={{ marginTop: "20px" }}>
-          Restart To All Courses
+          . 
         </button>
 
         <CourseTable

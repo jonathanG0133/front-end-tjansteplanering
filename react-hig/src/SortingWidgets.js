@@ -1,7 +1,13 @@
+// SortingWidgets.js
 import React from "react";
 import "./SortingWidgets.css";
 
-function SortingWidgets({ inputText, onInputChange }) {
+function SortingWidgets({ inputText, onInputChange, onClearClick }) {
+  const handleClearClick = () => {
+    onInputChange(""); // Clear the input text
+    onClearClick(); // Notify the parent about the clear click
+  };
+
   return (
     <div className="sökruta-container">
       <input
@@ -14,6 +20,7 @@ function SortingWidgets({ inputText, onInputChange }) {
         }}
         maxLength={4}
       />
+      <button onClick={handleClearClick}>Clear</button>
     </div>
   );
 }
