@@ -16,7 +16,7 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = ({ inputText }) => { 
+const Heatmap = ({ inputText }) => {
   if (!inputText) {
     inputText = new Date().getFullYear();
   }
@@ -30,7 +30,6 @@ const Heatmap = ({ inputText }) => {
   const [departmentCode, setDepartmentCode] = useState("");
 
   const [courseInstanceData, setCourseInstanceData] = useState([]);
-  
 
   const divRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -40,7 +39,7 @@ const Heatmap = ({ inputText }) => {
 
   const drawHeatmap = (data) => {
     if (!divRef.current || !data || !Array.isArray(data)) {
-      console.error('Invalid data:', data);
+      console.error("Invalid data:", data);
       return;
     }
     // Clear the existing SVG to prevent duplicates
@@ -105,27 +104,27 @@ const Heatmap = ({ inputText }) => {
       .domain(data.map((entity) => entity.name))
       .range([margin.top, height - margin.bottom])
       .padding(cellPadding / (cellHeight + cellPadding));
-    
-      const yAxis = svg
+
+    const yAxis = svg
       .append("g")
       .attr("transform", `translate(${margin.left}, 0)`)
       .call(d3.axisLeft(yScale))
       .selectAll(".tick text")
-      .style("cursor", "pointer") // Set cursor style;
-    
-  
-      yAxis.on("click", (event, entityClicked) => {
-        if (!staffView) {
-          setDepartmentCode(entityClicked);
-          setStaffView(true);
-          setSingleStaffView(false);
-        } else {
-            setSelectedStaff(staffData.find((staff) => staff.name === entityClicked));
-            setSingleStaffView(true);
-            drawHeatmap(staffData.filter((staff) => staff.name === entityClicked));
-        } 
-      });
-      
+      .style("cursor", "pointer"); // Set cursor style;
+
+    yAxis.on("click", (event, entityClicked) => {
+      if (!staffView) {
+        setDepartmentCode(entityClicked);
+        setStaffView(true);
+        setSingleStaffView(false);
+      } else {
+        setSelectedStaff(
+          staffData.find((staff) => staff.name === entityClicked)
+        );
+        setSingleStaffView(true);
+        drawHeatmap(staffData.filter((staff) => staff.name === entityClicked));
+      }
+    });
 
     svg
       .append("text")
@@ -175,7 +174,7 @@ const Heatmap = ({ inputText }) => {
             Week: {d.week + 1}
           </div>
         );
-        
+
         // Use d3.pointer to get coordinates relative to the SVG container
         const [x, y] = d3.pointer(event, divRef.current);
 
@@ -208,10 +207,20 @@ const Heatmap = ({ inputText }) => {
         tooltipRef.current.style.top = `${top}px`;
       })
       .on("mouseout", () => setTooltipVisible(false))
-      .on("click", (event, d) => {
-        if (staffView === true) {
-          const selectedStaff = data.find((staff) => staff.id === d.staffId);
-          setSelectedStaff(selectedStaff);
+      .on("click", (event, entityClicked) => {
+        if (!staffView) {
+          setDepartmentCode(entityClicked.name);
+          setStaffView(true);
+          setSingleStaffView(false);
+        } else {
+          const selected = staffData.find(
+            (staff) => staff.name === entityClicked.name
+          );
+          setSelectedStaff(selected);
+          setSingleStaffView(true);
+          drawHeatmap(
+            staffData.filter((staff) => staff.name === entityClicked.name)
+          );
         }
       });
 
@@ -278,7 +287,8 @@ const Heatmap = ({ inputText }) => {
     fetch(
       "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
         inputText +
-        "-01-01&code=" + departmentCode
+        "-01-01&code=" +
+        departmentCode
     )
       .then((response) => response.json())
       .then((data) => {
@@ -288,8 +298,7 @@ const Heatmap = ({ inputText }) => {
         }
       })
       .catch((error) => console.error("Error fetching staff data: ", error));
-}, [inputText, staffView, departmentCode]);
-  
+  }, [inputText, staffView, departmentCode]);
 
   // Fetching department data START
   useEffect(() => {
@@ -306,10 +315,10 @@ const Heatmap = ({ inputText }) => {
 
         // Call drawHeatmap only if data is available and staffView is false
         if (data && !staffView) {
-        drawHeatmap(data);
+          drawHeatmap(data);
         }
       } catch (error) {
-      console.error("Error fetching department data: ", error);
+        console.error("Error fetching department data: ", error);
       }
     };
 
@@ -317,8 +326,6 @@ const Heatmap = ({ inputText }) => {
   }, [inputText, staffView]);
   // Fetching department data END
 
-
-  
   // Fetching courses data START
   useEffect(() => {
     fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
@@ -392,8 +399,11 @@ const Heatmap = ({ inputText }) => {
           }}
           style={{ margin: "10px" }}
         >
-          {singleStaffView ? "Back" : 
-          staffView ? "Show Departments" : "Show Staff"}
+          {singleStaffView
+            ? "Back"
+            : staffView
+            ? "Show Departments"
+            : "Show Staff"}
         </button>
         <div
           ref={divRef}
@@ -416,8 +426,12 @@ const Heatmap = ({ inputText }) => {
         >
           {tooltipContent}
         </div>
-        <button id="resetButton" onClick={handleRestartClick} style={{ marginTop: "20px" }}>
-          Reset 
+        <button
+          id="resetButton"
+          onClick={handleRestartClick}
+          style={{ marginTop: "20px" }}
+        >
+          Reset
         </button>
 
         <CourseTable
