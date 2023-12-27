@@ -1,5 +1,6 @@
 // App.js
 import React, { useState } from "react";
+import "./App.css";
 import Heatmap from "./Heatmap";
 import SortingWidgets from "./SortingWidgets";
 
@@ -11,19 +12,14 @@ function App() {
     setInputText(text);
   };
 
-  const handleClearClick = () => {
-    setCode(""); // Clear the code
-  };
-
   return (
     <div className="heatmap-container">
       <SortingWidgets
         id="widget"
         inputText={inputText}
         onInputChange={handleTextChange}
-        onClearClick={handleClearClick} // Pass the callback function
       />
-      <Heatmap inputText={inputText} code={code} />
+      <Heatmap inputText={inputText} />
     </div>
   );
 }

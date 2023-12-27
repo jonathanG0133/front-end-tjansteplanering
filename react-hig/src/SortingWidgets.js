@@ -5,7 +5,6 @@ import "./SortingWidgets.css";
 function SortingWidgets({ inputText, onInputChange, onClearClick }) {
   const handleClearClick = () => {
     onInputChange(""); // Clear the input text
-    onClearClick(); // Notify the parent about the clear click
   };
 
   return (

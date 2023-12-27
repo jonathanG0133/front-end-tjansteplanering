@@ -47,28 +47,30 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
           <p>Cancelled</p>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Course ID</th>
-            <th>Course Name</th>
-            <th>Speed</th>
-            <th>Students</th>
-            <th>Start:End-Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {coursesToShow.map((course, index) => (
-            <tr key={index} className={getRowClass(course)}>
-              <td>{course.courseInstanceId}</td>
-              <td>{course.courseName}</td>
-              <td>{course.speed}</td>
-              <td>{course.students}</td>
-              <td>{course.task.timescope}</td>
+      <div className="container">
+        <table>
+          <thead>
+            <tr>
+              <th>Course ID</th>
+              <th>Course Name</th>
+              <th>Speed</th>
+              <th>Students</th>
+              <th>Start:End-Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {coursesToShow.map((course, index) => (
+              <tr key={index} className={getRowClass(course)}>
+                <td>{course.courseInstanceId}</td>
+                <td>{course.courseName}</td>
+                <td>{course.speed}</td>
+                <td>{course.students}</td>
+                <td>{course.task.timescope}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

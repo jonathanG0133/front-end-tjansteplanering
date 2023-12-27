@@ -1,16 +1,12 @@
 .App {
   text-align: center;
 }
+
 body {
-  background-color: #f5f5f5; /* Your desired light grey color */
-  /* Other global styles */
+  background-color: #252529;
 }
-.heatmap-container {
-  margin-top: 5%;
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  height: 100vh; /* Set the height of the container to fill the viewport */
-}
+
+
 
 
 

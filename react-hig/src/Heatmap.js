@@ -16,16 +16,21 @@ const calculateHeatmapWidth = () => {
   return width;
 };
 
-const Heatmap = ({ inputText, codeCleared }) => { 
+const Heatmap = ({ inputText }) => { 
   if (!inputText) {
     inputText = new Date().getFullYear();
   }
 
   const [staffView, setStaffView] = useState(false);
   const [staffData, setStaffData] = useState([]);
+
+  const [singleStaffView, setSingleStaffView] = useState(false);
+
   const [departmentData, setDepartmentData] = useState([]);
-  const [courseInstanceData, setCourseInstanceData] = useState([]);
   const [departmentCode, setDepartmentCode] = useState("");
+
+  const [courseInstanceData, setCourseInstanceData] = useState([]);
+  
 
   const divRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -34,7 +39,8 @@ const Heatmap = ({ inputText, codeCleared }) => {
   const [tooltipContent, setTooltipContent] = useState("");
 
   const drawHeatmap = (data) => {
-    if (!divRef.current || !data) {
+    if (!divRef.current || !data || !Array.isArray(data)) {
+      console.error('Invalid data:', data);
       return;
     }
     // Clear the existing SVG to prevent duplicates
@@ -107,16 +113,19 @@ const Heatmap = ({ inputText, codeCleared }) => {
       .selectAll(".tick text")
       .style("cursor", "pointer") // Set cursor style;
     
-    // Add click event handler to y-axis text when staffView is false
-    // Add click event handler to y-axis text when staffView is false
-if (!staffView) {
-  yAxis.on("click", (event, entityClicked) => {
-    console.log(entityClicked);
-    setDepartmentCode(entityClicked);
-    setStaffView(true);
-  });
-}
-
+  
+      yAxis.on("click", (event, entityClicked) => {
+        if (!staffView) {
+          setDepartmentCode(entityClicked);
+          setStaffView(true);
+          setSingleStaffView(false);
+        } else {
+            setSelectedStaff(staffData.find((staff) => staff.name === entityClicked));
+            setSingleStaffView(true);
+            drawHeatmap(staffData.filter((staff) => staff.name === entityClicked));
+        } 
+      });
+      
 
     svg
       .append("text")
@@ -138,14 +147,14 @@ if (!staffView) {
       .scaleThreshold()
       .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
       .range([
-        "#C0C0C0",
+        "#171718",
         "#4E2A84",
         "#2b83ba",
         "#5aa7d1",
         "#8abf86",
         "#fdae61",
         "#ea4e51",
-      ]);
+      ]); // C0C0C0 #1
 
     svg
       .selectAll(".heat-rect")
@@ -264,7 +273,7 @@ if (!staffView) {
     divRef.current.appendChild(svg.node());
   };
 
-  // Fetching staff data START
+  // Fetching all staff data START
   useEffect(() => {
     fetch(
       "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
@@ -275,14 +284,11 @@ if (!staffView) {
       .then((data) => {
         setStaffData(data);
         if (staffView) {
-          console.log("helloo+++o++o+o+o" + departmentCode);
           drawHeatmap(data); // Use the updated data, not the previous state
         }
       })
       .catch((error) => console.error("Error fetching staff data: ", error));
-  }, [inputText, staffView, departmentCode]);
-  
-  
+}, [inputText, staffView, departmentCode]);
   
 
   // Fetching department data START
@@ -345,6 +351,8 @@ if (!staffView) {
 
   const handleRestartClick = () => {
     setStaffView(false); // Make sure staff view is set to false
+    setSingleStaffView(false);
+    setDepartmentCode("");
     setSelectedStaff(null);
     setTooltipVisible(false);
     setTooltipContent("");
@@ -372,10 +380,20 @@ if (!staffView) {
           {departmentCode ? `${departmentCode}` : "All Departments"}
         </div>
         <button
-          onClick={() => setStaffView(!staffView)}
+          onClick={() => {
+            if (singleStaffView) {
+              setStaffView(true);
+              setSingleStaffView(false);
+              setSelectedStaff(null);
+              drawHeatmap(staffData);
+            } else {
+              setStaffView(!staffView);
+            }
+          }}
           style={{ margin: "10px" }}
         >
-          {staffView ? "Show Departments" : "Show Staff"}
+          {singleStaffView ? "Back" : 
+          staffView ? "Show Departments" : "Show Staff"}
         </button>
         <div
           ref={divRef}
@@ -398,8 +416,8 @@ if (!staffView) {
         >
           {tooltipContent}
         </div>
-        <button onClick={handleRestartClick} style={{ marginTop: "20px" }}>
-          . 
+        <button id="resetButton" onClick={handleRestartClick} style={{ marginTop: "20px" }}>
+          Reset 
         </button>
 
         <CourseTable
