@@ -10,7 +10,7 @@ function App() {
 
   const handleTextChange = (text) => {
     setInputText(text);
-  };
+  }
 
   return (
     <div className="heatmap-container">

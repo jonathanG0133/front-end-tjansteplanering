@@ -42,6 +42,7 @@ const Heatmap = ({ inputText }) => {
       console.error("Invalid data:", data);
       return;
     }
+
     // Clear the existing SVG to prevent duplicates
     d3.select(divRef.current).selectAll("svg").remove();
     const numStaff = data.length;
@@ -284,21 +285,25 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching all staff data START
   useEffect(() => {
-    fetch(
-      "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
-        inputText +
-        "-01-01&code=" +
-        departmentCode
-    )
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
+            inputText +
+            "-01-01&code=" +
+            departmentCode
+        );
+        const data = await response.json();
+
         setStaffData(data);
-        if (staffView) {
-          drawHeatmap(data); // Use the updated data, not the previous state
-        }
-      })
-      .catch((error) => console.error("Error fetching staff data: ", error));
+      } catch (error) {
+        console.error("Error fetching staff data: Invalid Year");
+      }
+    };
+
+    fetchData();
   }, [inputText, staffView, departmentCode]);
+
 
   // Fetching department data START
   useEffect(() => {
@@ -312,13 +317,8 @@ const Heatmap = ({ inputText }) => {
         const data = await response.json();
 
         setDepartmentData(data);
-
-        // Call drawHeatmap only if data is available and staffView is false
-        if (data && !staffView) {
-          drawHeatmap(data);
-        }
       } catch (error) {
-        console.error("Error fetching department data: ", error);
+        console.error("Error fetching department data: Invalid Year");
       }
     };
 
@@ -333,12 +333,18 @@ const Heatmap = ({ inputText }) => {
       .then((data2) => {
         setCourseInstanceData(data2);
       })
-      .catch((error) => console.error("Error fetching data: ", error));
+      .catch((error) => console.error("Error fetching data: Invalid Year" + 
+      "\n" + 
+      "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"));
   }, [inputText]);
 
   useEffect(() => {
     if (staffView) {
-      drawHeatmap(staffData);
+      if (singleStaffView && selectedStaff) {
+          drawHeatmap(staffData.filter((staff) => staff.name === selectedStaff.name));
+      } else {
+        drawHeatmap(staffData);
+      }
     } else {
       drawHeatmap(departmentData);
     }
