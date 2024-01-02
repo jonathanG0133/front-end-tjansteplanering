@@ -30,6 +30,7 @@ const Heatmap = ({ inputText }) => {
   const [departmentCode, setDepartmentCode] = useState("");
 
   const [courseInstanceData, setCourseInstanceData] = useState([]);
+  const [projectData, setProjectData] = useState([]);
 
   const divRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -42,7 +43,7 @@ const Heatmap = ({ inputText }) => {
       console.error("Invalid data:", data);
       return;
     }
-
+    console.log(staffData);
     // Clear the existing SVG to prevent duplicates
     d3.select(divRef.current).selectAll("svg").remove();
     const numStaff = data.length;
@@ -147,7 +148,7 @@ const Heatmap = ({ inputText }) => {
       .scaleThreshold()
       .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
       .range([
-        "#171718",
+        "#a3a3a3",
         "#4E2A84",
         "#2b83ba",
         "#5aa7d1",
@@ -304,7 +305,6 @@ const Heatmap = ({ inputText }) => {
     fetchData();
   }, [inputText, staffView, departmentCode]);
 
-
   // Fetching department data START
   useEffect(() => {
     const fetchData = async () => {
@@ -330,18 +330,40 @@ const Heatmap = ({ inputText }) => {
   useEffect(() => {
     fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
       .then((response) => response.json())
-      .then((data2) => {
-        setCourseInstanceData(data2);
+      .then((data) => {
+        setCourseInstanceData(data);
       })
-      .catch((error) => console.error("Error fetching data: Invalid Year" + 
-      "\n" + 
-      "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"));
+      .catch((error) =>
+        console.error(
+          "Error fetching data: Invalid Year" +
+            "\n" +
+            "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"
+        )
+      );
+  }, [inputText]);
+
+  // Fetching project data START
+  useEffect(() => {
+    fetch("http://localhost:8080/project/getByYear?year=" + inputText)
+      .then((response) => response.json())
+      .then((data) => {
+        setProjectData(data);
+      })
+      .catch((error) =>
+        console.error(
+          "Error fetching data: Invalid Year" +
+            "\n" +
+            "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"
+        )
+      );
   }, [inputText]);
 
   useEffect(() => {
     if (staffView) {
       if (singleStaffView && selectedStaff) {
-          drawHeatmap(staffData.filter((staff) => staff.name === selectedStaff.name));
+        drawHeatmap(
+          staffData.filter((staff) => staff.name === selectedStaff.name)
+        );
       } else {
         drawHeatmap(staffData);
       }
@@ -374,77 +396,68 @@ const Heatmap = ({ inputText }) => {
   return (
     <div
       style={{
-        width: "100%",
-        margin: "0 auto",
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+        position: "relative",
+        width: "100%", // Set the width to 100% of its parent
       }}
     >
+      <div style={{ marginBottom: "10px", fontSize: "30px" }}>
+        {departmentCode ? `${departmentCode}` : "All Departments"}
+      </div>
+      <button
+        onClick={() => {
+          if (singleStaffView) {
+            setStaffView(true);
+            setSingleStaffView(false);
+            setSelectedStaff(null);
+            drawHeatmap(staffData);
+          } else {
+            setStaffView(!staffView);
+          }
+        }}
+        style={{ margin: "10px" }}
+      >
+        {singleStaffView
+          ? "Back"
+          : staffView
+          ? "Show Departments"
+          : "Show Staff"}
+      </button>
       <div
+        ref={divRef}
+        style={{ width: "100%", display: "flex", justifyContent: "center" }}
+      >
+        {/* Heatmap will be appended here and centered within this div */}
+      </div>
+      <div
+        ref={tooltipRef}
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          position: "relative",
-          width: "100%", // Set the width to 100% of its parent
+          display: tooltipVisible ? "block" : "none",
+          position: "absolute",
+          background: "white",
+          border: "1px solid #ccc",
+          padding: "5px",
+          zIndex: 9999,
+          minWidth: "200px",
+          maxWidth: "300px",
         }}
       >
-        <div style={{ marginBottom: "10px", fontSize: "30px" }}>
-          {departmentCode ? `${departmentCode}` : "All Departments"}
-        </div>
-        <button
-          onClick={() => {
-            if (singleStaffView) {
-              setStaffView(true);
-              setSingleStaffView(false);
-              setSelectedStaff(null);
-              drawHeatmap(staffData);
-            } else {
-              setStaffView(!staffView);
-            }
-          }}
-          style={{ margin: "10px" }}
-        >
-          {singleStaffView
-            ? "Back"
-            : staffView
-            ? "Show Departments"
-            : "Show Staff"}
-        </button>
-        <div
-          ref={divRef}
-          style={{ width: "100%", display: "flex", justifyContent: "center" }}
-        >
-          {/* Heatmap will be appended here and centered within this div */}
-        </div>
-        <div
-          ref={tooltipRef}
-          style={{
-            display: tooltipVisible ? "block" : "none",
-            position: "absolute",
-            background: "white",
-            border: "1px solid #ccc",
-            padding: "5px",
-            zIndex: 9999,
-            minWidth: "200px",
-            maxWidth: "300px",
-          }}
-        >
-          {tooltipContent}
-        </div>
-        <button
-          id="resetButton"
-          onClick={handleRestartClick}
-          style={{ marginTop: "20px" }}
-        >
-          Reset
-        </button>
-
-        <CourseTable
-          selectedStaff={selectedStaff}
-          courseInstanceData={courseInstanceData}
-        />
+        {tooltipContent}
       </div>
+      <button
+        id="resetButton"
+        onClick={handleRestartClick}
+        style={{ marginTop: "20px" }}
+      >
+        Reset
+      </button>
+
+      <CourseTable
+        selectedStaff={selectedStaff}
+        courseInstanceData={courseInstanceData}
+      />
     </div>
   );
 };

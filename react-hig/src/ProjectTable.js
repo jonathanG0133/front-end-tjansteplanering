@@ -1,21 +1,19 @@
 import { useState } from "react";
-import "./CourseTable.css";
+import "./ProjectTable.css";
 
-const CourseTable = ({ selectedStaff, courseInstanceData }) => {
+const ProjectTable = ({ selectedStaff, projectData }) => {
   const [showInfo, setShowInfo] = useState(false);
 
   // Use courseInstanceData if no staff is selected, otherwise use staff's courses
-  const coursesToShow = selectedStaff
-    ? selectedStaff.courseInstances.map((courseInstance) => ({
-        ...courseInstance,
-        courseName: courseInstance.course.name,
+  const projectToShow = selectedStaff
+    ? selectedStaff.projects.map((project) => ({
+        ...project,
       }))
-    : courseInstanceData.map((courseInstance) => ({
-        ...courseInstance,
-        courseName: courseInstance.course.name,
+    : projectData.map((projectData) => ({
+        ...projectData,
       }));
 
-  const getRowClass = (course) => {
+  const getRowClass = (project) => {
     if (course.task.isCancelled === 1) {
       return "row-grey";
     } else if (course.task.isHandled === 0) {
@@ -25,10 +23,10 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
   };
 
   return (
-    <div className="course-table">
+    <div className="project-table">
       <div className="header-container">
         <h2>
-          {selectedStaff ? `${selectedStaff.name}'s Courses` : "All Courses"}
+          {selectedStaff ? `${selectedStaff.name}'s Projects` : "All Projects"}
         </h2>
         <button
           className="info-button"
@@ -53,19 +51,19 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>Speed</th>
-              <th>Students</th>
+              <th>Budget</th>
+              <th>TimeResource</th>
               <th>Start:End-Date</th>
             </tr>
           </thead>
           <tbody>
-            {coursesToShow.map((course, index) => (
+            {projectToShow.map((project, index) => (
               <tr key={index} className={getRowClass(course)}>
-                <td>{course.courseInstanceId}</td>
-                <td>{course.courseName}</td>
-                <td>{course.speed}</td>
-                <td>{course.students}</td>
-                <td>{course.task.timescope}</td>
+                <td>{project.id}</td>
+                <td>{project.name}</td>
+                <td>{project.task.budget}</td>
+                <td>{project.task.timeResource}</td>
+                <td>{project.task.timescope}</td>
               </tr>
             ))}
           </tbody>
