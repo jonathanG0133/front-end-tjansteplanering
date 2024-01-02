@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import CourseTable from "./CourseTable";
+import ProjectTable from "./ProjectTable";
 import "./Heatmap.css";
 
 const calculateHeatmapWidth = () => {
@@ -44,7 +45,7 @@ const Heatmap = ({ inputText }) => {
       console.error("Invalid data:", data);
       return;
     }
-    console.log(staffData);
+
     // Clear the existing SVG to prevent duplicates
     d3.select(divRef.current).selectAll("svg").remove();
     const numStaff = data.length;
@@ -296,8 +297,15 @@ const Heatmap = ({ inputText }) => {
             departmentCode
         );
         const data = await response.json();
-
         setStaffData(data);
+        if (singleStaffView && selectedStaff) {
+          // Find the updated data for the selected staff
+          const updatedSelectedStaff = data.find(
+            (staff) => staff.id === selectedStaff.id
+          );
+          setSelectedStaff(updatedSelectedStaff);
+          setCourseInstanceData(updatedSelectedStaff.courseInstances);
+        }
       } catch (error) {
         console.error("Error fetching staff data: Invalid Year");
       }
@@ -373,28 +381,39 @@ const Heatmap = ({ inputText }) => {
 
   useEffect(() => {
     let data;
-  
+
     if (staffView) {
       if (singleStaffView && selectedStaff) {
         data = staffData.filter((staff) => staff.name === selectedStaff.name);
+        console.log(selectedStaff);
       } else {
         data = staffData;
       }
     } else {
       data = departmentData;
     }
-  
+
     const dataToDraw = sortOrder ? getSortedData(data, sortOrder) : data;
     drawHeatmap(dataToDraw);
-  }, [staffView, staffData, departmentData, singleStaffView, selectedStaff, sortOrder]);
+  }, [
+    staffView,
+    staffData,
+    departmentData,
+    singleStaffView,
+    selectedStaff,
+    sortOrder,
+  ]);
 
   const getSortedData = (data, sortOrder) => {
     // Calculate the total workload for each entity
     const entitiesWithTotalWorkload = data.map((entity) => {
-      const totalWorkload = entity.workLoad.reduce((acc, week) => acc + week, 0);
+      const totalWorkload = entity.workLoad.reduce(
+        (acc, week) => acc + week,
+        0
+      );
       return { ...entity, totalWorkload };
     });
-  
+
     // Sort the entities based on total workload
     let sorted = [...entitiesWithTotalWorkload];
     if (sortOrder === "descending") {
@@ -402,20 +421,18 @@ const Heatmap = ({ inputText }) => {
     } else if (sortOrder === "ascending") {
       sorted.sort((a, b) => a.totalWorkload - b.totalWorkload);
     }
-  
+
     return sorted;
   };
 
-// ...
+  const sortedData = useMemo(() => {
+    const data = staffView ? staffData : departmentData;
+    return getSortedData(data, sortOrder);
+  }, [sortOrder, staffView]);
 
-const sortedData = useMemo(() => {
-  const data = staffView ? staffData : departmentData;
-  return getSortedData(data, sortOrder);
-}, [sortOrder, staffView]);
-
-useEffect(() => {
-  drawHeatmap(sortedData);
-}, [sortedData]);
+  useEffect(() => {
+    drawHeatmap(sortedData);
+  }, [sortedData]);
 
   const handleRestartClick = () => {
     setStaffView(false); // Make sure staff view is set to false
@@ -441,108 +458,100 @@ useEffect(() => {
   return (
     <div
       style={{
-        width: "100%",
-        margin: "0 auto",
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
-    <div
-      style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         position: "relative",
         width: "100%", // Set the width to 100% of its parent
       }}
-      >
+    >
       <button
-  onClick={handleSortByWorkloadClick}
-  style={{
-    position: "absolute",
-    left: "468px",
-    top: "130px",
-    height: "23px",
-    width: "123px",
-    display: singleStaffView ? "none" : "block", // Set display based on singleStaffView
-  }}
->
-  {sortOrder === ""
-    ? "Sort by Workload"
-    : `Workload ${
-        sortOrder === "ascending" ? "⮝" : "⮟"
-      }`}
-</button>
+        onClick={handleSortByWorkloadClick}
+        style={{
+          position: "absolute",
+          left: "468px",
+          top: "130px",
+          height: "23px",
+          width: "123px",
+          display: singleStaffView ? "none" : "block", // Set display based on singleStaffView
+        }}
+      >
+        {sortOrder === ""
+          ? "Sort by Workload"
+          : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
+      </button>
 
-{sortOrder !== "" && (
-  <button
-    onClick={handleResetSortClick}
-    style={{
-      position: "absolute",
-      left: "595px",
-      top: "131px",
-      display: singleStaffView ? "none" : "block", // Set display based on singleStaffView
-    }}
-  >
-    Reset
-  </button>
-)}
-
-        <div style={{ marginBottom: "10px", fontSize: "30px" }}>
-          {departmentCode ? `${departmentCode}` : "All Departments"}
-        </div>
+      {sortOrder !== "" && (
         <button
-          onClick={() => {
-            if (singleStaffView) {
-              setStaffView(true);
-              setSingleStaffView(false);
-              setSelectedStaff(null);
-              drawHeatmap(staffData);
-            } else {
-              setStaffView(!staffView);
-            }
-          }}
-          style={{ margin: "10px" }}
-        >
-          {singleStaffView
-            ? "Back"
-            : staffView
-            ? "Show Departments"
-            : "Show Staff"}
-        </button>
-        <div
-          ref={divRef}
-          style={{ width: "100%", display: "flex", justifyContent: "center" }}
-        >
-          {/* Heatmap will be appended here and centered within this div */}
-        </div>
-        <div
-          ref={tooltipRef}
+          onClick={handleResetSortClick}
           style={{
-            display: tooltipVisible ? "block" : "none",
             position: "absolute",
-            background: "white",
-            border: "1px solid #ccc",
-            padding: "5px",
-            zIndex: 9999,
-            minWidth: "200px",
-            maxWidth: "300px",
+            left: "595px",
+            top: "131px",
+            display: singleStaffView ? "none" : "block", // Set display based on singleStaffView
           }}
-        >
-          {tooltipContent}
-        </div>
-        <button
-          id="resetButton"
-          onClick={handleRestartClick}
-          style={{ marginTop: "20px" }}
         >
           Reset
         </button>
+      )}
 
-      <CourseTable
-        selectedStaff={selectedStaff}
-        courseInstanceData={courseInstanceData}
-      />
+      <div style={{ marginBottom: "10px", fontSize: "30px" }}>
+        {departmentCode ? `${departmentCode}` : "All Departments"}
+      </div>
+      <button
+        onClick={() => {
+          if (singleStaffView) {
+            setStaffView(true);
+            setSingleStaffView(false);
+            setSelectedStaff(null);
+            drawHeatmap(staffData);
+          } else {
+            setStaffView(!staffView);
+          }
+        }}
+        style={{ margin: "10px" }}
+      >
+        {singleStaffView
+          ? "Back"
+          : staffView
+          ? "Show Departments"
+          : "Show Staff"}
+      </button>
+      <div
+        ref={divRef}
+        style={{ width: "100%", display: "flex", justifyContent: "center" }}
+      >
+        {/* Heatmap will be appended here and centered within this div */}
+      </div>
+      <div
+        ref={tooltipRef}
+        style={{
+          display: tooltipVisible ? "block" : "none",
+          position: "absolute",
+          background: "white",
+          border: "1px solid #ccc",
+          padding: "5px",
+          zIndex: 9999,
+          minWidth: "200px",
+          maxWidth: "300px",
+        }}
+      >
+        {tooltipContent}
+      </div>
+      <button
+        id="resetButton"
+        onClick={handleRestartClick}
+        style={{ marginTop: "20px" }}
+      >
+        Reset
+      </button>
+      <div className="tables">
+        <CourseTable
+          selectedStaff={selectedStaff}
+          courseInstanceData={courseInstanceData}
+        />
+        <ProjectTable selectedStaff={selectedStaff} projectData={projectData} />
+      </div>
     </div>
   );
 };

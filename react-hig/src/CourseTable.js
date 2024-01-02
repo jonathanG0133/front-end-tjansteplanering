@@ -6,14 +6,8 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
 
   // Use courseInstanceData if no staff is selected, otherwise use staff's courses
   const coursesToShow = selectedStaff
-    ? selectedStaff.courseInstances.map((courseInstance) => ({
-        ...courseInstance,
-        courseName: courseInstance.course.name,
-      }))
-    : courseInstanceData.map((courseInstance) => ({
-        ...courseInstance,
-        courseName: courseInstance.course.name,
-      }));
+    ? selectedStaff.courseInstances
+    : courseInstanceData;
 
   const getRowClass = (course) => {
     if (course.task.isCancelled === 1) {
@@ -62,7 +56,7 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
             {coursesToShow.map((course, index) => (
               <tr key={index} className={getRowClass(course)}>
                 <td>{course.courseInstanceId}</td>
-                <td>{course.courseName}</td>
+                <td>{course.course.name}</td>
                 <td>{course.speed}</td>
                 <td>{course.students}</td>
                 <td>{course.task.timescope}</td>

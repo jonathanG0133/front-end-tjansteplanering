@@ -5,18 +5,12 @@ const ProjectTable = ({ selectedStaff, projectData }) => {
   const [showInfo, setShowInfo] = useState(false);
 
   // Use courseInstanceData if no staff is selected, otherwise use staff's courses
-  const projectToShow = selectedStaff
-    ? selectedStaff.projects.map((project) => ({
-        ...project,
-      }))
-    : projectData.map((projectData) => ({
-        ...projectData,
-      }));
+  const projectToShow = selectedStaff ? selectedStaff.projects : projectData;
 
   const getRowClass = (project) => {
-    if (course.task.isCancelled === 1) {
+    if (project.task.isCancelled === 1) {
       return "row-grey";
-    } else if (course.task.isHandled === 0) {
+    } else if (project.task.isHandled === 0) {
       return "row-red";
     }
     return "row-default";
@@ -58,7 +52,7 @@ const ProjectTable = ({ selectedStaff, projectData }) => {
           </thead>
           <tbody>
             {projectToShow.map((project, index) => (
-              <tr key={index} className={getRowClass(course)}>
+              <tr key={index} className={getRowClass(project)}>
                 <td>{project.id}</td>
                 <td>{project.name}</td>
                 <td>{project.task.budget}</td>
@@ -73,4 +67,4 @@ const ProjectTable = ({ selectedStaff, projectData }) => {
   );
 };
 
-export default CourseTable;
+export default ProjectTable;
