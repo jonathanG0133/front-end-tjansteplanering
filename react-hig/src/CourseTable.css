@@ -5,10 +5,6 @@ th {
   padding: 0.25rem;
 }
 
-.body {
-  border: black;
-  border-width: 2px;
-}
 .row-red {
   background-color: rgba(245, 59, 87, 0.7);
 }
@@ -78,10 +74,6 @@ thead th {
 
 /* For other browsers like Firefox, scrollbar styling is limited */
 .container {
-  height: 400px;
+  max-height: 400px;
   overflow: auto;
-}
-
-.course-table {
-  margin-bottom: 10%;
 }
