@@ -6,3 +6,17 @@
   justify-content: center;
   width: 100%; /* Adjust as needed */
 }
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center; /* Centers the buttons horizontally */
+  gap: 10px; /* Adjust the space between buttons */
+  margin-top: 10px; /* Space above the button row */
+}

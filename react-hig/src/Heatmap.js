@@ -456,72 +456,49 @@ const Heatmap = ({ inputText }) => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        position: "relative",
-        width: "100%", // Set the width to 100% of its parent
-      }}
-    >
-      <button
-        onClick={handleSortByWorkloadClick}
-        style={{
-          position: "absolute",
-          left: "468px",
-          top: "130px",
-          height: "23px",
-          width: "123px",
-          display: singleStaffView ? "none" : "block", // Set display based on singleStaffView
-        }}
-      >
-        {sortOrder === ""
-          ? "Sort by Workload"
-          : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
-      </button>
-
-      {sortOrder !== "" && (
-        <button
-          onClick={handleResetSortClick}
-          style={{
-            position: "absolute",
-            left: "595px",
-            top: "131px",
-            display: singleStaffView ? "none" : "block", // Set display based on singleStaffView
-          }}
-        >
-          Reset
-        </button>
-      )}
-
-      <div style={{ marginBottom: "10px", fontSize: "30px" }}>
+    <div className="main-container">
+      <div style={{ fontSize: "25px", fontWeight: "bold" }}>
         {departmentCode ? `${departmentCode}` : "All Departments"}
       </div>
-      <button
-        onClick={() => {
-          if (singleStaffView) {
-            setStaffView(true);
-            setSingleStaffView(false);
-            setSelectedStaff(null);
-            drawHeatmap(staffData);
-          } else {
-            setStaffView(!staffView);
-          }
-        }}
-        style={{ margin: "10px" }}
-      >
-        {singleStaffView
-          ? "Back"
-          : staffView
-          ? "Show Departments"
-          : "Show Staff"}
-      </button>
+      <div className="button-container">
+        <button onClick={handleSortByWorkloadClick} className="sort-button">
+          {sortOrder === ""
+            ? "Sort by Workload"
+            : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
+        </button>
+
+        {sortOrder !== "" && (
+          <button onClick={handleResetSortClick} className="resetSort-button">
+            Reset Sort
+          </button>
+        )}
+
+        <button
+          onClick={() => {
+            if (singleStaffView) {
+              setStaffView(true);
+              setSingleStaffView(false);
+              setSelectedStaff(null);
+              drawHeatmap(staffData);
+            } else {
+              setStaffView(!staffView);
+            }
+          }}
+          className="reset-button"
+        >
+          {singleStaffView
+            ? "Back"
+            : staffView
+            ? "Show Departments"
+            : "Show Staff"}
+        </button>
+      </div>
+
       <div
         ref={divRef}
         style={{ width: "100%", display: "flex", justifyContent: "center" }}
       >
-        {/* Heatmap will be appended here and centered within this div */}
+        {/* Heatmap is rendered here */}
       </div>
       <div
         ref={tooltipRef}
