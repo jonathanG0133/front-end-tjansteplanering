@@ -22,6 +22,11 @@ const Heatmap = ({ inputText }) => {
     inputText = new Date().getFullYear();
   }
 
+  const margin = { top: 70, right: 50, bottom: 60, left: 150 };
+
+  // Use state for height since it might be dynamic
+  const [height, setHeight] = useState(0);
+
   const [staffView, setStaffView] = useState(false);
   const [staffData, setStaffData] = useState([]);
 
@@ -61,7 +66,7 @@ const Heatmap = ({ inputText }) => {
     const height =
       numStaff * (cellHeight + cellPadding) + margin.top + margin.bottom;
     const totalHeight = Math.max(height + legendHeight, minSvgHeight);
-
+    setHeight(height);
     // Calculate width based on the window size
     const width = calculateHeatmapWidth();
 
@@ -123,65 +128,13 @@ const Heatmap = ({ inputText }) => {
         setStaffView(true);
         setSingleStaffView(false);
       } else {
-        const newSelectedStaff = staffData.find(
-          (staff) => staff.name === entityClicked
+        setSelectedStaff(
+          staffData.find((staff) => staff.name === entityClicked)
         );
-        setSelectedStaff(newSelectedStaff);
         setSingleStaffView(true);
         drawHeatmap(staffData.filter((staff) => staff.name === entityClicked));
       }
     });
-    if (singleStaffView) {
-      const avgWorkloadText = svg
-        .append("text")
-        .attr("x", margin.left + 140)
-        .attr("y", height + 20) // Position the text below the heatmap
-        .style("font-size", "16px") // Adjust font size as needed
-        .style("text-anchor", "middle");
-
-      avgWorkloadText.append("tspan").text("Employed for ");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`${avgWorkload[3]}%`)
-        .style("font-weight", "bold");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(" of the year")
-        .style("font-weight", "normal");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(" ")
-        .attr("x", margin.left + 140)
-        .attr("dy", "1em"); // Add space before the next line
-
-      avgWorkloadText
-        .append("tspan")
-        .text("Time planned this year: ")
-        .attr("x", margin.left + 140)
-        .attr("dy", "1em");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`${avgWorkload[0]} `)
-        .style("font-weight", "bold");
-
-      avgWorkloadText.append("tspan").text("hours, ");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`${avgWorkload[1]} `)
-        .style("font-weight", "bold");
-
-      avgWorkloadText.append("tspan").text("days, ");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`(${avgWorkload[2]}%)`)
-        .style("font-weight", "bold");
-    }
 
     svg
       .append("text")
@@ -270,13 +223,13 @@ const Heatmap = ({ inputText }) => {
           setStaffView(true);
           setSingleStaffView(false);
         } else {
-          const newSelectedStaff = staffData.find(
-            (staff) => staff.name === entityClicked
+          const selected = staffData.find(
+            (staff) => staff.name === entityClicked.name
           );
-          setSelectedStaff(newSelectedStaff);
+          setSelectedStaff(selected);
           setSingleStaffView(true);
           drawHeatmap(
-            staffData.filter((staff) => staff.name === entityClicked)
+            staffData.filter((staff) => staff.name === entityClicked.name)
           );
         }
       });
@@ -339,6 +292,72 @@ const Heatmap = ({ inputText }) => {
     divRef.current.appendChild(svg.node());
   };
 
+  // Extracted function to update the part of heatmap that depends on avgWorkload
+  const updateHeatmapWithAvgWorkload = (margin, height) => {
+    if (singleStaffView && avgWorkload.length > 0) {
+      // Assuming your SVG selection logic here
+      const svg = d3.select(divRef.current).select("svg");
+
+      // Clear previous avgWorkloadText (if any)
+      svg.select(".avgWorkloadText").remove();
+
+      const avgWorkloadText = svg
+        .append("text")
+        .attr("x", margin.left + 140)
+        .attr("y", height + 20) // Position the text below the heatmap
+        .style("font-size", "16px") // Adjust font size as needed
+        .style("text-anchor", "middle");
+
+      avgWorkloadText.append("tspan").text("Employed for ");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`${avgWorkload[3]}%`)
+        .style("font-weight", "bold");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(" of the year")
+        .style("font-weight", "normal");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(" ")
+        .attr("x", margin.left + 140)
+        .attr("dy", "1em"); // Add space before the next line
+
+      avgWorkloadText
+        .append("tspan")
+        .text("Time planned this year: ")
+        .attr("x", margin.left + 140)
+        .attr("dy", "1em");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`${avgWorkload[0]} `)
+        .style("font-weight", "bold");
+
+      avgWorkloadText.append("tspan").text("hours, ");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`${avgWorkload[1]} `)
+        .style("font-weight", "bold");
+
+      avgWorkloadText.append("tspan").text("days, ");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`(${avgWorkload[2]}%)`)
+        .style("font-weight", "bold");
+    }
+  };
+
+  // useEffect for avgWorkload
+  useEffect(() => {
+    updateHeatmapWithAvgWorkload(margin, height);
+  }, [avgWorkload]); // Dependency array
+
   // Fetching all staff data START
   useEffect(() => {
     const fetchData = async () => {
@@ -387,27 +406,27 @@ const Heatmap = ({ inputText }) => {
     fetchData();
   }, [inputText, staffView]);
   // Fetching department data END
-  const fetchAvgWorkload = (staff) => {
-    if (staff) {
-      fetch(
-        "http://localhost:8080/commitment/getWorkloadPerStaff?staff-id=" +
-          staff.id +
-          "&year=" +
-          inputText
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          setAvgWorkload(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching data: " + error);
-        });
-    }
-  };
+
+  // Fetching avgWorkload data START
 
   useEffect(() => {
-    fetchAvgWorkload(selectedStaff);
-  }, [selectedStaff, inputText]); // Add inputText to the dependency array if its value affects the data fetching
+    const fetchAvgWorkload = async () => {
+      if (selectedStaff) {
+        try {
+          const response = await fetch(
+            `http://localhost:8080/commitment/getWorkloadPerStaff?staff-id=${selectedStaff.id}&year=${inputText}`
+          );
+          const data = await response.json();
+          setAvgWorkload(data);
+          console.log(data); // Logging the fetched data
+        } catch (error) {
+          console.error("Error fetching avgWorkload data:", error);
+        }
+      }
+    };
+
+    fetchAvgWorkload();
+  }, [inputText, selectedStaff]); // Dependency array for useEffect
 
   // Fetching avgWorkload data END
 
@@ -564,7 +583,6 @@ const Heatmap = ({ inputText }) => {
               setSingleStaffView(false);
               setSelectedStaff(null);
               drawHeatmap(staffData);
-              setAvgWorkload([]);
             } else {
               setStaffView(!staffView);
             }
