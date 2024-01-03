@@ -26,6 +26,7 @@ const Heatmap = ({ inputText }) => {
   const [staffData, setStaffData] = useState([]);
 
   const [singleStaffView, setSingleStaffView] = useState(false);
+  const [avgWorkload, setAvgWorkload] = useState([]);
 
   const [departmentData, setDepartmentData] = useState([]);
   const [departmentCode, setDepartmentCode] = useState("");
@@ -122,13 +123,65 @@ const Heatmap = ({ inputText }) => {
         setStaffView(true);
         setSingleStaffView(false);
       } else {
-        setSelectedStaff(
-          staffData.find((staff) => staff.name === entityClicked)
+        const newSelectedStaff = staffData.find(
+          (staff) => staff.name === entityClicked
         );
+        setSelectedStaff(newSelectedStaff);
         setSingleStaffView(true);
         drawHeatmap(staffData.filter((staff) => staff.name === entityClicked));
       }
     });
+    if (singleStaffView) {
+      const avgWorkloadText = svg
+        .append("text")
+        .attr("x", margin.left + 140)
+        .attr("y", height + 20) // Position the text below the heatmap
+        .style("font-size", "16px") // Adjust font size as needed
+        .style("text-anchor", "middle");
+
+      avgWorkloadText.append("tspan").text("Employed for ");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`${avgWorkload[3]}%`)
+        .style("font-weight", "bold");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(" of the year")
+        .style("font-weight", "normal");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(" ")
+        .attr("x", margin.left + 140)
+        .attr("dy", "1em"); // Add space before the next line
+
+      avgWorkloadText
+        .append("tspan")
+        .text("Time planned this year: ")
+        .attr("x", margin.left + 140)
+        .attr("dy", "1em");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`${avgWorkload[0]} `)
+        .style("font-weight", "bold");
+
+      avgWorkloadText.append("tspan").text("hours, ");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`${avgWorkload[1]} `)
+        .style("font-weight", "bold");
+
+      avgWorkloadText.append("tspan").text("days, ");
+
+      avgWorkloadText
+        .append("tspan")
+        .text(`(${avgWorkload[2]}%)`)
+        .style("font-weight", "bold");
+    }
 
     svg
       .append("text")
@@ -150,7 +203,7 @@ const Heatmap = ({ inputText }) => {
       .scaleThreshold()
       .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
       .range([
-        "#a3a3a3",
+        "#d3d3d3",
         "#4E2A84",
         "#2b83ba",
         "#5aa7d1",
@@ -217,13 +270,13 @@ const Heatmap = ({ inputText }) => {
           setStaffView(true);
           setSingleStaffView(false);
         } else {
-          const selected = staffData.find(
-            (staff) => staff.name === entityClicked.name
+          const newSelectedStaff = staffData.find(
+            (staff) => staff.name === entityClicked
           );
-          setSelectedStaff(selected);
+          setSelectedStaff(newSelectedStaff);
           setSingleStaffView(true);
           drawHeatmap(
-            staffData.filter((staff) => staff.name === entityClicked.name)
+            staffData.filter((staff) => staff.name === entityClicked)
           );
         }
       });
@@ -334,6 +387,29 @@ const Heatmap = ({ inputText }) => {
     fetchData();
   }, [inputText, staffView]);
   // Fetching department data END
+  const fetchAvgWorkload = (staff) => {
+    if (staff) {
+      fetch(
+        "http://localhost:8080/commitment/getWorkloadPerStaff?staff-id=" +
+          staff.id +
+          "&year=" +
+          inputText
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setAvgWorkload(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data: " + error);
+        });
+    }
+  };
+
+  useEffect(() => {
+    fetchAvgWorkload(selectedStaff);
+  }, [selectedStaff, inputText]); // Add inputText to the dependency array if its value affects the data fetching
+
+  // Fetching avgWorkload data END
 
   // Fetching courses data START
   useEffect(() => {
@@ -385,7 +461,6 @@ const Heatmap = ({ inputText }) => {
     if (staffView) {
       if (singleStaffView && selectedStaff) {
         data = staffData.filter((staff) => staff.name === selectedStaff.name);
-        console.log(selectedStaff);
       } else {
         data = staffData;
       }
@@ -441,6 +516,7 @@ const Heatmap = ({ inputText }) => {
     setSelectedStaff(null);
     setTooltipVisible(false);
     setTooltipContent("");
+    setAvgWorkload([]);
   };
 
   const handleSortByWorkloadClick = () => {
@@ -461,14 +537,22 @@ const Heatmap = ({ inputText }) => {
         {departmentCode ? `${departmentCode}` : "All Departments"}
       </div>
       <div className="button-container">
-        <button onClick={handleSortByWorkloadClick} className="sort-button">
+        <button
+          onClick={handleSortByWorkloadClick}
+          className="sort-button"
+          style={{ display: singleStaffView ? "none" : "block" }}
+        >
           {sortOrder === ""
             ? "Sort by Workload"
             : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
         </button>
 
         {sortOrder !== "" && (
-          <button onClick={handleResetSortClick} className="resetSort-button">
+          <button
+            onClick={handleResetSortClick}
+            className="resetSort-button"
+            style={{ display: singleStaffView ? "none" : "block" }}
+          >
             Reset Sort
           </button>
         )}
@@ -480,6 +564,7 @@ const Heatmap = ({ inputText }) => {
               setSingleStaffView(false);
               setSelectedStaff(null);
               drawHeatmap(staffData);
+              setAvgWorkload([]);
             } else {
               setStaffView(!staffView);
             }
@@ -500,6 +585,7 @@ const Heatmap = ({ inputText }) => {
       >
         {/* Heatmap is rendered here */}
       </div>
+
       <div
         ref={tooltipRef}
         style={{
