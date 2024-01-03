@@ -479,7 +479,7 @@ const Heatmap = ({ inputText }) => {
 
     if (staffView) {
       if (singleStaffView && selectedStaff) {
-        data = staffData.filter((staff) => staff.name === selectedStaff.name);
+        data = staffData.find((staff) => staff.name === selectedStaff.name);
       } else {
         data = staffData;
       }
