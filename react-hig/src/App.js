@@ -1,5 +1,5 @@
 // App.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Heatmap from "./Heatmap";
 import SortingWidgets from "./SortingWidgets";
@@ -10,7 +10,11 @@ function App() {
 
   const handleTextChange = (text) => {
     setInputText(text);
-  }
+  };
+
+  useEffect(() => {
+    document.title = "Tjänsteplanering";
+  }, []);
 
   return (
     <div className="heatmap-container">
