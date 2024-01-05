@@ -444,7 +444,7 @@ const Heatmap = ({ inputText }) => {
         console.error(
           "Error fetching data: Invalid Year" +
             "\n" +
-            "http://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"
+            "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"
         )
       );
   }, [inputText]);
