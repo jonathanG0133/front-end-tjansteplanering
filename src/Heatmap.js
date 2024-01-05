@@ -363,7 +363,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://10.51.3.66:8080/commitment/getInfoForAllStaffWithCode?date=" +
+          "http://10.51.3.66:8080/commitment/getInfoForAllStaffWithCode?date=" +
             inputText +
             "-01-01&code=" +
             departmentCode
@@ -391,7 +391,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://10.51.3.66:8080/commitment/getDepartmentInfoByYear?date=" +
+          "http://10.51.3.66:8080/commitment/getDepartmentInfoByYear?date=" +
             inputText +
             "-01-01"
         );
@@ -414,7 +414,7 @@ const Heatmap = ({ inputText }) => {
       if (selectedStaff) {
         try {
           const response = await fetch(
-            "https://10.51.3.66:8080/commitment/getWorkloadPerStaff?staff-id=${selectedStaff.id}&year=${inputText}"
+            "http://10.51.3.66:8080/commitment/getWorkloadPerStaff?staff-id=${selectedStaff.id}&year=${inputText}"
           );
           const data = await response.json();
           setAvgWorkload(data);
@@ -432,7 +432,7 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching courses data START
   useEffect(() => {
-    fetch("https://10.51.3.66:8080/courseInstance/getByYear?year=" + inputText)
+    fetch("http://10.51.3.66:8080/courseInstance/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data) => {
         setCourseInstanceData(data);
@@ -448,7 +448,7 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching project data START
   useEffect(() => {
-    fetch("https://10.51.3.66:8080/project/getByYear?year=" + inputText)
+    fetch("http://10.51.3.66:8080/project/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data) => {
         setProjectData(data);
