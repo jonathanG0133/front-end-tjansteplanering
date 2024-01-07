@@ -475,14 +475,15 @@ const Heatmap = ({ inputText }) => {
                 : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
             </button>
 
-            {sortOrder !== "" && (
-              <button
-                onClick={handleResetSortClick}
-                className="resetSort-button"
-              >
-                Reset Sort
-              </button>
-            )}
+            {sortOrder === ""
+              ? "Sort by Workload"
+              : `Workload ${
+                  sortOrder === "ascending" ? (
+                    <i className="fas fa-arrow-up"></i>
+                  ) : (
+                    <i className="fas fa-arrow-down"></i>
+                  )
+                }`}
           </>
         )}
 
