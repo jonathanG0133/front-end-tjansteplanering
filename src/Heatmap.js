@@ -467,16 +467,23 @@ const Heatmap = ({ inputText }) => {
         {departmentCode ? `${departmentCode}` : "All Departments"}
       </div>
       <div className="button-container">
-        <button onClick={handleSortByWorkloadClick} className="sort-button">
-          {sortOrder === ""
-            ? "Sort by Workload"
-            : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
-        </button>
+        {!singleStaffView && (
+          <>
+            <button onClick={handleSortByWorkloadClick} className="sort-button">
+              {sortOrder === ""
+                ? "Sort by Workload"
+                : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
+            </button>
 
-        {sortOrder !== "" && (
-          <button onClick={handleResetSortClick} className="resetSort-button">
-            Reset Sort
-          </button>
+            {sortOrder !== "" && (
+              <button
+                onClick={handleResetSortClick}
+                className="resetSort-button"
+              >
+                Reset Sort
+              </button>
+            )}
+          </>
         )}
 
         <button
