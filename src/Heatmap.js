@@ -22,16 +22,10 @@ const Heatmap = ({ inputText }) => {
     inputText = new Date().getFullYear();
   }
 
-  const margin = { top: 70, right: 50, bottom: 60, left: 150 };
-
-  // Use state for height since it might be dynamic
-  const [height, setHeight] = useState(0);
-
   const [staffView, setStaffView] = useState(false);
   const [staffData, setStaffData] = useState([]);
 
   const [singleStaffView, setSingleStaffView] = useState(false);
-  const [avgWorkload, setAvgWorkload] = useState([]);
 
   const [departmentData, setDepartmentData] = useState([]);
   const [departmentCode, setDepartmentCode] = useState("");
@@ -66,7 +60,7 @@ const Heatmap = ({ inputText }) => {
     const height =
       numStaff * (cellHeight + cellPadding) + margin.top + margin.bottom;
     const totalHeight = Math.max(height + legendHeight, minSvgHeight);
-    setHeight(height);
+
     // Calculate width based on the window size
     const width = calculateHeatmapWidth();
 
@@ -156,7 +150,7 @@ const Heatmap = ({ inputText }) => {
       .scaleThreshold()
       .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
       .range([
-        "#d3d3d3",
+        "#a3a3a3",
         "#4E2A84",
         "#2b83ba",
         "#5aa7d1",
@@ -292,72 +286,6 @@ const Heatmap = ({ inputText }) => {
     divRef.current.appendChild(svg.node());
   };
 
-  // Extracted function to update the part of heatmap that depends on avgWorkload
-  const updateHeatmapWithAvgWorkload = (margin, height) => {
-    if (singleStaffView && avgWorkload.length > 0) {
-      // Assuming your SVG selection logic here
-      const svg = d3.select(divRef.current).select("svg");
-
-      // Clear previous avgWorkloadText (if any)
-      svg.select(".avgWorkloadText").remove();
-
-      const avgWorkloadText = svg
-        .append("text")
-        .attr("x", margin.left + 140)
-        .attr("y", height + 20) // Position the text below the heatmap
-        .style("font-size", "16px") // Adjust font size as needed
-        .style("text-anchor", "middle");
-
-      avgWorkloadText.append("tspan").text("Employed for ");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`${avgWorkload[3]}%`)
-        .style("font-weight", "bold");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(" of the year")
-        .style("font-weight", "normal");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(" ")
-        .attr("x", margin.left + 140)
-        .attr("dy", "1em"); // Add space before the next line
-
-      avgWorkloadText
-        .append("tspan")
-        .text("Time planned this year: ")
-        .attr("x", margin.left + 140)
-        .attr("dy", "1em");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`${avgWorkload[0]} `)
-        .style("font-weight", "bold");
-
-      avgWorkloadText.append("tspan").text("hours, ");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`${avgWorkload[1]} `)
-        .style("font-weight", "bold");
-
-      avgWorkloadText.append("tspan").text("days, ");
-
-      avgWorkloadText
-        .append("tspan")
-        .text(`(${avgWorkload[2]}%)`)
-        .style("font-weight", "bold");
-    }
-  };
-
-  // useEffect for avgWorkload
-  useEffect(() => {
-    updateHeatmapWithAvgWorkload(margin, height);
-  }, [avgWorkload]); // Dependency array
-
   // Fetching all staff data START
   useEffect(() => {
     const fetchData = async () => {
@@ -406,29 +334,6 @@ const Heatmap = ({ inputText }) => {
     fetchData();
   }, [inputText, staffView]);
   // Fetching department data END
-
-  // Fetching avgWorkload data START
-
-  useEffect(() => {
-    const fetchAvgWorkload = async () => {
-      if (selectedStaff) {
-        try {
-          const response = await fetch(
-            "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getWorkloadPerStaff?staff-id=${selectedStaff.id}&year=${inputText}"
-          );
-          const data = await response.json();
-          setAvgWorkload(data);
-          console.log(data); // Logging the fetched data
-        } catch (error) {
-          console.error("Error fetching avgWorkload data:", error);
-        }
-      }
-    };
-
-    fetchAvgWorkload();
-  }, [inputText, selectedStaff]); // Dependency array for useEffect
-
-  // Fetching avgWorkload data END
 
   // Fetching courses data START
   useEffect(() => {
@@ -485,7 +390,8 @@ const Heatmap = ({ inputText }) => {
 
     if (staffView) {
       if (singleStaffView && selectedStaff) {
-        data = staffData.find((staff) => staff.name === selectedStaff.name);
+        data = staffData.filter((staff) => staff.name === selectedStaff.name);
+        console.log(selectedStaff);
       } else {
         data = staffData;
       }
@@ -541,7 +447,6 @@ const Heatmap = ({ inputText }) => {
     setSelectedStaff(null);
     setTooltipVisible(false);
     setTooltipContent("");
-    setAvgWorkload([]);
   };
 
   const handleSortByWorkloadClick = () => {
@@ -562,22 +467,14 @@ const Heatmap = ({ inputText }) => {
         {departmentCode ? `${departmentCode}` : "All Departments"}
       </div>
       <div className="button-container">
-        <button
-          onClick={handleSortByWorkloadClick}
-          className="sort-button"
-          style={{ display: singleStaffView ? "none" : "block" }}
-        >
+        <button onClick={handleSortByWorkloadClick} className="sort-button">
           {sortOrder === ""
             ? "Sort by Workload"
             : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
         </button>
 
         {sortOrder !== "" && (
-          <button
-            onClick={handleResetSortClick}
-            className="resetSort-button"
-            style={{ display: singleStaffView ? "none" : "block" }}
-          >
+          <button onClick={handleResetSortClick} className="resetSort-button">
             Reset Sort
           </button>
         )}
@@ -609,7 +506,6 @@ const Heatmap = ({ inputText }) => {
       >
         {/* Heatmap is rendered here */}
       </div>
-
       <div
         ref={tooltipRef}
         style={{
