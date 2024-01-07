@@ -3,6 +3,12 @@ import * as d3 from "d3";
 import CourseTable from "./CourseTable";
 import ProjectTable from "./ProjectTable";
 import "./Heatmap.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSort,
+  faArrowDownShortWide,
+  faArrowUpWideShort,
+} from "@fortawesome/free-solid-svg-icons";
 
 const calculateHeatmapWidth = () => {
   const windowWidth = window.innerWidth;
@@ -470,20 +476,26 @@ const Heatmap = ({ inputText }) => {
         {!singleStaffView && (
           <>
             <button onClick={handleSortByWorkloadClick} className="sort-button">
-              {sortOrder === ""
-                ? "Sort by Workload"
-                : `Workload ${sortOrder === "ascending" ? "⮝" : "⮟"}`}
+              Sort by Workload
+              <FontAwesomeIcon
+                icon={
+                  sortOrder === ""
+                    ? faSort
+                    : sortOrder === "ascending"
+                    ? faArrowUpWideShort
+                    : faArrowDownShortWide
+                }
+              />
             </button>
 
-            {sortOrder === ""
-              ? "Sort by Workload"
-              : `Workload ${
-                  sortOrder === "ascending" ? (
-                    <i className="fas fa-arrow-up"></i>
-                  ) : (
-                    <i className="fas fa-arrow-down"></i>
-                  )
-                }`}
+            {sortOrder !== "" && (
+              <button
+                onClick={handleResetSortClick}
+                className="resetSort-button"
+              >
+                Reset Sort
+              </button>
+            )}
           </>
         )}
 
