@@ -8,6 +8,7 @@ import {
   faSort,
   faArrowDownShortWide,
   faArrowUpWideShort,
+  faArrowDownWideShort,
 } from "@fortawesome/free-solid-svg-icons";
 
 const calculateHeatmapWidth = () => {
@@ -476,14 +477,14 @@ const Heatmap = ({ inputText }) => {
         {!singleStaffView && (
           <>
             <button onClick={handleSortByWorkloadClick} className="sort-button">
-              Sort by Workload
+              Sort by Workload{" "}
               <FontAwesomeIcon
                 icon={
                   sortOrder === ""
                     ? faSort
                     : sortOrder === "ascending"
-                    ? faArrowUpWideShort
-                    : faArrowDownShortWide
+                    ? faArrowDownShortWide
+                    : faArrowDownWideShort
                 }
               />
             </button>
