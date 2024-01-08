@@ -5,24 +5,12 @@ th {
   padding: 0.25rem;
 }
 
-.row-red {
-  background-color: rgba(245, 59, 87, 0.7);
-}
-
-.row-grey {
-  background-color: #a3a3a3;
-}
-
-.row-default {
-  background-color: #f5f5f5;
-}
 .info-modal {
   display: none;
   position: fixed;
   left: 55%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background-color: #f5f5f5;
   padding: 5px;
   border: 1px solid #ccc;
   z-index: 1000;
@@ -48,16 +36,7 @@ th {
   margin-bottom: 10px; /* Adjust space between button and table */
 }
 
-#handled {
-  background-color: rgba(245, 59, 87, 0.7);
-  padding: 2px;
-  text-align: center;
-  font-weight: bold;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-#cancelled {
-  background-color: rgb(211, 211, 211, 0.7);
+.info-box {
   padding: 2px;
   text-align: center;
   font-weight: bold;
@@ -66,10 +45,6 @@ th {
 }
 
 thead th {
-  background: #d4d4d4;
-  z-index: 10;
-  position: sticky;
-  top: 0;
 }
 
 /* For other browsers like Firefox, scrollbar styling is limited */

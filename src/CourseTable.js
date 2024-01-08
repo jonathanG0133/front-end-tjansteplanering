@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./CourseTable.css";
+import COLORS from "./values/colors";
 
 const CourseTable = ({ selectedStaff, courseInstanceData }) => {
   const [showInfo, setShowInfo] = useState(false);
@@ -9,13 +10,13 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
     ? selectedStaff.courseInstances
     : courseInstanceData;
 
-  const getRowClass = (course) => {
+  const getRowStyle = (course) => {
     if (course.task.isCancelled === 1) {
-      return "row-grey";
+      return { backgroundColor: COLORS.cancelled };
     } else if (course.task.isHandled === 0) {
-      return "row-red";
+      return { backgroundColor: COLORS.notHandled };
     }
-    return "row-default";
+    return { backgroundColor: COLORS.background };
   };
 
   return (
@@ -33,17 +34,27 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
           ?
         </button>
       </div>
-      <div className={`info-modal ${showInfo ? "show" : ""}`}>
-        <div id="handled">
+      <div
+        className={`info-modal ${showInfo ? "show" : ""}`}
+        style={{ backgroundColor: COLORS.background }}
+      >
+        <div className="info-box">
           <p>Not Handled</p>
         </div>
-        <div id="cancelled">
+        <div className="info-box">
           <p>Cancelled</p>
         </div>
       </div>
       <div className="container">
         <table>
-          <thead>
+          <thead
+            style={{
+              backgroundColor: COLORS.tableHeader,
+              zindex: 10,
+              position: "sticky",
+              top: 0,
+            }}
+          >
             <tr>
               <th>ID</th>
               <th>Name</th>
@@ -54,7 +65,7 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
           </thead>
           <tbody>
             {coursesToShow.map((course, index) => (
-              <tr key={index} className={getRowClass(course)}>
+              <tr key={index} style={getRowStyle(course)}>
                 <td>{course.courseInstanceId}</td>
                 <td>{course.course.name}</td>
                 <td>{course.speed}</td>

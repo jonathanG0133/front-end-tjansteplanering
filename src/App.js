@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import Heatmap from "./Heatmap";
 import SortingWidgets from "./SortingWidgets";
+import { COLORS } from "./values/colors";
 
 function App() {
   const [inputText, setInputText] = useState("");
-  const [code, setCode] = useState("");
 
   const handleTextChange = (text) => {
     setInputText(text);
@@ -17,7 +17,10 @@ function App() {
   }, []);
 
   return (
-    <div className="heatmap-container">
+    <div
+      className="heatmap-container"
+      style={{ backgroundColor: COLORS.background }}
+    >
       <SortingWidgets
         id="widget"
         inputText={inputText}

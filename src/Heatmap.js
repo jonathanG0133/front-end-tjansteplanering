@@ -10,6 +10,7 @@ import {
   faArrowUpWideShort,
   faArrowDownWideShort,
 } from "@fortawesome/free-solid-svg-icons";
+import { COLORS } from "./values/colors";
 
 const calculateHeatmapWidth = () => {
   const windowWidth = window.innerWidth;
@@ -157,14 +158,14 @@ const Heatmap = ({ inputText }) => {
       .scaleThreshold()
       .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
       .range([
-        "#a3a3a3",
-        "#4E2A84",
-        "#2b83ba",
-        "#5aa7d1",
-        "#8abf86",
-        "#fdae61",
-        "#ea4e51",
-      ]); // C0C0C0 #1
+        COLORS.verylow,
+        COLORS.low,
+        COLORS.mediumlow,
+        COLORS.medium,
+        COLORS.mediumhigh,
+        COLORS.high,
+        COLORS.veryhigh,
+      ]);
 
     svg
       .selectAll(".heat-rect")
@@ -282,7 +283,7 @@ const Heatmap = ({ inputText }) => {
       .style("text-anchor", "middle") // Horizontally center the text
       .style("font-size", "10px") // Font size
       .style("font-weight", "bold")
-      .style("fill", "#f5f5f5") // Make the font bold
+      .style("fill", "#f5f5f5")
       .text((d) =>
         typeof d.range === "string"
           ? d.range

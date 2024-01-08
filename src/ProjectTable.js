@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./ProjectTable.css";
+import COLORS from "./values/colors";
 
 const ProjectTable = ({ selectedStaff, projectData }) => {
   const [showInfo, setShowInfo] = useState(false);
@@ -7,13 +8,13 @@ const ProjectTable = ({ selectedStaff, projectData }) => {
   // Use courseInstanceData if no staff is selected, otherwise use staff's courses
   const projectToShow = selectedStaff ? selectedStaff.projects : projectData;
 
-  const getRowClass = (project) => {
+  const getRowStyle = (project) => {
     if (project.task.isCancelled === 1) {
-      return "row-grey";
+      return { backgroundColor: COLORS.cancelled };
     } else if (project.task.isHandled === 0) {
-      return "row-red";
+      return { backgroundColor: COLORS.notHandled };
     }
-    return "row-default";
+    return { backgroundColor: COLORS.background };
   };
 
   return (
@@ -31,17 +32,27 @@ const ProjectTable = ({ selectedStaff, projectData }) => {
           ?
         </button>
       </div>
-      <div className={`info-modal ${showInfo ? "show" : ""}`}>
-        <div id="handled">
+      <div
+        className={`info-modal ${showInfo ? "show" : ""}`}
+        style={{ backgroundColor: COLORS.background }}
+      >
+        <div className="info-box">
           <p>Not Handled</p>
         </div>
-        <div id="cancelled">
+        <div className="info-box">
           <p>Cancelled</p>
         </div>
       </div>
       <div className="container">
         <table>
-          <thead>
+          <thead
+            style={{
+              backgroundColor: COLORS.tableHeader,
+              zindex: 10,
+              position: "sticky",
+              top: 0,
+            }}
+          >
             <tr>
               <th>ID</th>
               <th>Name</th>
@@ -52,7 +63,7 @@ const ProjectTable = ({ selectedStaff, projectData }) => {
           </thead>
           <tbody>
             {projectToShow.map((project, index) => (
-              <tr key={index} className={getRowClass(project)}>
+              <tr key={index} style={getRowStyle(project)}>
                 <td>{project.id}</td>
                 <td>{project.name}</td>
                 <td>{project.task.budget}</td>
