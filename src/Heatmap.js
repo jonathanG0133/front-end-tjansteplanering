@@ -240,9 +240,9 @@ const Heatmap = ({ inputText }) => {
       .range()
       .map((color, index) => {
         const d = colorScale.invertExtent(color);
-        if (index === 0) return { range: "< 30", color: color };
+        if (index === 0) return { range: "< 1", color: color };
         if (index === colorScale.range().length - 1)
-          return { range: "> 130", color: color };
+          return { range: "> 105", color: color };
         return { range: [d[0], d[1]], color: color };
       })
       .reverse();
