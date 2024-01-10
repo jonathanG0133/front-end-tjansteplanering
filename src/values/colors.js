@@ -4,7 +4,7 @@ export const COLORS = {
   cancelled: "#929292",
   verylow: "#a3a3a3",
   low: "#4E2A84",
-  mediumlow: "#2b83ba",
+  mediumlow: "#00008b",
   medium: "#5aa7d1",
   mediumhigh: "#8abf86",
   high: "#fdae61",
