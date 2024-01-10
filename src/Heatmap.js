@@ -156,7 +156,7 @@ const Heatmap = ({ inputText }) => {
 
     const colorScale = d3
       .scaleThreshold()
-      .domain([30, 50, 70, 90, 110, 130]) // Define the threshold values
+      .domain([1, 30, 50, 80, 90, 105]) // Define the threshold values
       .range([
         COLORS.verylow,
         COLORS.low,
