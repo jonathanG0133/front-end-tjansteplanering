@@ -37,6 +37,7 @@ const Heatmap = ({ inputText }) => {
 
   const [departmentData, setDepartmentData] = useState([]);
   const [departmentCode, setDepartmentCode] = useState("");
+  const [departmentTitle, setDepartmentTitle] = useState("");
 
   const [courseInstanceData, setCourseInstanceData] = useState([]);
   const [sortOrder, setSortOrder] = useState("");
@@ -97,6 +98,14 @@ const Heatmap = ({ inputText }) => {
       });
     }
 
+    const periodData = [
+      { name: "Period 1", start: 36, end: 45 },
+      { name: "Period 2", start: 46, end: 3 },
+      { name: "Period 3", start: 4, end: 13 },
+      { name: "Period 4", start: 14, end: 23 },
+      { name: "Summer", start: 24, end: 35 },
+    ];
+
     // Create SVG with dynamic height
     const svg = d3
       .select(divRef.current)
@@ -122,10 +131,87 @@ const Heatmap = ({ inputText }) => {
       .attr("transform", `translate(${margin.left}, 0)`)
       .call(d3.axisLeft(yScale))
       .selectAll(".tick text")
-      .style("cursor", "pointer"); // Set cursor style;
+      .style("cursor", "pointer");
+
+    // Lägg till periodiska linjer
+    const periodLines = svg
+      .selectAll(".period-line")
+      .data(periodData)
+      .enter()
+      .append("line")
+      .attr("class", "period-line")
+      .attr("x1", (d) => xScale(d.start))
+      .attr("x2", (d) => xScale(d.start))
+      .attr("y1", margin.top - 5)
+      .attr("y2", height - margin.bottom)
+      .attr("stroke", "black")
+      .attr("stroke-width", 3); // Öka tjockleken på linjerna för tydlighet
+
+    // Lägg till periodiska texter
+    const periodText = svg
+      .selectAll(".period-text")
+      .data(periodData)
+      .enter()
+      .append("text")
+      .attr("class", "period-text")
+      .attr("x", (d) => xScale(d.start) + 95)
+      .attr("y", margin.top - 10)
+      .attr("text-anchor", "middle")
+      .text((d) => d.name)
+      .style("fill", "black");
+    const xAxis = svg
+      .append("g")
+      .attr("transform", `translate(0, ${height - margin.bottom})`)
+      .call(
+        d3
+          .axisBottom(xScale)
+          .tickValues(d3.range(numWeeks)) // Placera tick var 10:e vecka
+          .tickFormat((d) => `${d + 1}`) // Visa endast var 10:e vecka
+      );
+
+    // Lägg till styling för x-axeln
+    xAxis
+      .selectAll(".tick text")
+      .style("font-size", "10px")
+      .style("fill", "black");
+
+    yAxis.each(function (d, i) {
+      const labelTexts = {
+        7411: "Datavetenskap - 7411",
+        7414: "Samhällsbyggnad - 7414",
+        7415: "BRP - 7415",
+      };
+      const labelText = labelTexts[d] || d;
+      d3.select(this).text(labelText);
+    });
 
     yAxis.on("click", (event, entityClicked) => {
+      const labelTexts = {
+        7411: "Datavetenskap",
+        7414: "Samhällsbyggnad",
+        7415: "BRP",
+      };
+
+      const departmentName = labelTexts[entityClicked] || entityClicked;
+
+      // Uppdatera titeln baserat på enheten som klickades på
+      setDepartmentCode(entityClicked);
+      setStaffView(true);
+      setSingleStaffView(false);
+      setDepartmentTitle(departmentName); //
+
       if (!staffView) {
+        // Lägg till kod för att visa label bredvid klickad tick-text
+        const labelText = labelTexts[entityClicked] || entityClicked;
+        svg
+          .append("text")
+          .attr("x", width + 120) // Justera x-positionen efter behov
+          .attr("y", yScale(entityClicked) + yScale.bandwidth() / 2)
+          .attr("text-anchor", "start")
+          .attr("alignment-baseline", "middle")
+          .style("font-size", "12px")
+          .text(labelText);
+
         setDepartmentCode(entityClicked);
         setStaffView(true);
         setSingleStaffView(false);
@@ -299,7 +385,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getInfoForAllStaffWithCode?date=" +
+          "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
             inputText +
             "-01-01&code=" +
             departmentCode
@@ -327,7 +413,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getDepartmentInfoByYear?date=" +
+          "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" +
             inputText +
             "-01-01"
         );
@@ -345,10 +431,7 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching courses data START
   useEffect(() => {
-    fetch(
-      "https://node128935-tjansteplanering.jls-sto2.elastx.net/courseInstance/getByYear?year=" +
-        inputText
-    )
+    fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data) => {
         setCourseInstanceData(data);
@@ -364,10 +447,7 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching project data START
   useEffect(() => {
-    fetch(
-      "https://node128935-tjansteplanering.jls-sto2.elastx.net/project/getByYear?year=" +
-        inputText
-    )
+    fetch("http://localhost:8080/project/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data) => {
         setProjectData(data);
@@ -472,7 +552,7 @@ const Heatmap = ({ inputText }) => {
   return (
     <div className="main-container">
       <div style={{ fontSize: "25px", fontWeight: "bold" }}>
-        {departmentCode ? `${departmentCode}` : "All Departments"}
+        {staffView ? departmentTitle : "All Departments"}
       </div>
       <div className="button-container">
         {!singleStaffView && (
