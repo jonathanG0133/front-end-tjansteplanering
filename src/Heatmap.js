@@ -55,10 +55,10 @@ const Heatmap = ({ inputText }) => {
       return;
     }
 
-    // Clear the existing SVG to prevent duplicates
-    d3.select(divRef.current).selectAll("svg").remove();
+    // Completely clear the SVG
+    d3.select(divRef.current).selectAll("*").remove(); // Clear everything inside the div
+
     const numStaff = data.length;
-    const numWeeks = 52;
     const margin = { top: 70, right: 50, bottom: 60, left: 150 };
     const cellHeight = 15;
     const cellPadding = 2;
@@ -116,7 +116,7 @@ const Heatmap = ({ inputText }) => {
 
     const xScale = d3
       .scaleBand()
-      .domain(d3.range(numWeeks))
+      .domain(d3.range(data.length < 1 ? 52 : data[0].workLoad.length))
       .range([margin.left, width - margin.right])
       .padding(0.1);
 
@@ -140,12 +140,12 @@ const Heatmap = ({ inputText }) => {
       .enter()
       .append("line")
       .attr("class", "period-line")
-      .attr("x1", (d) => xScale(d.start))
-      .attr("x2", (d) => xScale(d.start))
+      .attr("x1", (d) => xScale(d.start) - 1)
+      .attr("x2", (d) => xScale(d.start) - 1)
       .attr("y1", margin.top - 5)
       .attr("y2", height - margin.bottom)
       .attr("stroke", "black")
-      .attr("stroke-width", 3); // Öka tjockleken på linjerna för tydlighet
+      .attr("stroke-width", 2); // Öka tjockleken på linjerna för tydlighet
 
     // Lägg till periodiska texter
     const periodText = svg
@@ -159,14 +159,15 @@ const Heatmap = ({ inputText }) => {
       .attr("text-anchor", "middle")
       .text((d) => d.name)
       .style("fill", "black");
+
     const xAxis = svg
       .append("g")
       .attr("transform", `translate(0, ${height - margin.bottom})`)
       .call(
         d3
           .axisBottom(xScale)
-          .tickValues(d3.range(numWeeks)) // Placera tick var 10:e vecka
-          .tickFormat((d) => `${d + 1}`) // Visa endast var 10:e vecka
+          .tickValues(d3.range(data.length < 1 ? 52 : data[0].workLoad.length))
+          .tickFormat((d) => `${d + 1}`)
       );
 
     // Lägg till styling för x-axeln
@@ -191,8 +192,6 @@ const Heatmap = ({ inputText }) => {
         7414: "Samhällsbyggnad",
         7415: "BRP",
       };
-      
-     
 
       if (!staffView) {
         // Lägg till kod för att visa label bredvid klickad tick-text
@@ -205,9 +204,9 @@ const Heatmap = ({ inputText }) => {
           .attr("alignment-baseline", "middle")
           .style("font-size", "12px")
           .text(labelText);
-          const departmentName = labelTexts[entityClicked] || entityClicked;
+        const departmentName = labelTexts[entityClicked] || entityClicked;
 
-          // Uppdatera titeln baserat på enheten som klickades på
+        // Uppdatera titeln baserat på enheten som klickades på
         setDepartmentCode(entityClicked);
         setDepartmentTitle(departmentName); //
         setStaffView(true);
@@ -250,13 +249,15 @@ const Heatmap = ({ inputText }) => {
         COLORS.veryhigh,
       ]);
 
+    // Bind data to rectangles
     svg
       .selectAll(".heat-rect")
       .data(heatmapData)
       .enter()
       .append("rect")
+      .attr("class", "heat-rect")
       .attr("x", (d) => xScale(d.week))
-      .attr("y", (d) => yScale(d.name)) // Use the department name for the y-axis
+      .attr("y", (d) => yScale(d.name))
       .attr("width", xScale.bandwidth())
       .attr("height", yScale.bandwidth())
       .attr("fill", (d) => colorScale(d.workLoad))
@@ -388,7 +389,9 @@ const Heatmap = ({ inputText }) => {
             departmentCode
         );
         const data = await response.json();
+
         setStaffData(data);
+
         if (singleStaffView && selectedStaff) {
           // Find the updated data for the selected staff
           const updatedSelectedStaff = data.find(
