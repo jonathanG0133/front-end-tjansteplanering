@@ -191,14 +191,8 @@ const Heatmap = ({ inputText }) => {
         7414: "Samhällsbyggnad",
         7415: "BRP",
       };
-
-      const departmentName = labelTexts[entityClicked] || entityClicked;
-
-      // Uppdatera titeln baserat på enheten som klickades på
-      setDepartmentCode(entityClicked);
-      setStaffView(true);
-      setSingleStaffView(false);
-      setDepartmentTitle(departmentName); //
+      
+     
 
       if (!staffView) {
         // Lägg till kod för att visa label bredvid klickad tick-text
@@ -211,8 +205,11 @@ const Heatmap = ({ inputText }) => {
           .attr("alignment-baseline", "middle")
           .style("font-size", "12px")
           .text(labelText);
+          const departmentName = labelTexts[entityClicked] || entityClicked;
 
+          // Uppdatera titeln baserat på enheten som klickades på
         setDepartmentCode(entityClicked);
+        setDepartmentTitle(departmentName); //
         setStaffView(true);
         setSingleStaffView(false);
       } else {
