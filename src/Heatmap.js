@@ -55,7 +55,7 @@ const Heatmap = ({ inputText }) => {
       return;
     }
 
-    console.log(data.length);
+    console.log(data[0].workLoad.length);
 
     // Completely clear the SVG
     d3.select(divRef.current).selectAll("*").remove(); // Clear everything inside the div
