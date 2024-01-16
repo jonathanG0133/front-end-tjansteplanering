@@ -55,6 +55,8 @@ const Heatmap = ({ inputText }) => {
       return;
     }
 
+    console.log(data.length);
+
     // Completely clear the SVG
     d3.select(divRef.current).selectAll("*").remove(); // Clear everything inside the div
 
@@ -413,7 +415,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getDepartmentInfoByYear?date=" +
+          "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" +
             inputText +
             "-01-01"
         );
@@ -431,10 +433,7 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching courses data START
   useEffect(() => {
-    fetch(
-      "https://node128935-tjansteplanering.jls-sto2.elastx.net/courseInstance/getByYear?year=" +
-        inputText
-    )
+    fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data) => {
         setCourseInstanceData(data);
@@ -450,10 +449,7 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching project data START
   useEffect(() => {
-    fetch(
-      "https://node128935-tjansteplanering.jls-sto2.elastx.net/project/getByYear?year=" +
-        inputText
-    )
+    fetch("http://localhost:8080/project/getByYear?year=" + inputText)
       .then((response) => response.json())
       .then((data) => {
         setProjectData(data);
