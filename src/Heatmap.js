@@ -415,7 +415,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/commitment/getDepartmentInfoByYear?date=" +
+          "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getDepartmentInfoByYear?date=" +
             inputText +
             "-01-01"
         );
@@ -433,7 +433,10 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching courses data START
   useEffect(() => {
-    fetch("http://localhost:8080/courseInstance/getByYear?year=" + inputText)
+    fetch(
+      "https://node128935-tjansteplanering.jls-sto2.elastx.net/courseInstance/getByYear?year=" +
+        inputText
+    )
       .then((response) => response.json())
       .then((data) => {
         setCourseInstanceData(data);
@@ -449,7 +452,10 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching project data START
   useEffect(() => {
-    fetch("http://localhost:8080/project/getByYear?year=" + inputText)
+    fetch(
+      "https://node128935-tjansteplanering.jls-sto2.elastx.net/project/getByYear?year=" +
+        inputText
+    )
       .then((response) => response.json())
       .then((data) => {
         setProjectData(data);
