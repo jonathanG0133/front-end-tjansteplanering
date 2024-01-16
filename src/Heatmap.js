@@ -463,7 +463,13 @@ const Heatmap = ({ inputText }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      drawHeatmap(staffView ? staffData : departmentData);
+      drawHeatmap(
+        staffView
+          ? singleStaffView
+            ? selectedStaff
+            : staffData
+          : departmentData
+      );
     };
 
     window.addEventListener("resize", handleResize);
@@ -471,7 +477,7 @@ const Heatmap = ({ inputText }) => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [staffData, departmentData, staffView]);
+  }, [staffData, departmentData, staffView, singleStaffView, selectedStaff]);
 
   useEffect(() => {
     let data;
