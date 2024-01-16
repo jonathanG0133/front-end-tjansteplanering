@@ -37,6 +37,7 @@ const Heatmap = ({ inputText }) => {
 
   const [departmentData, setDepartmentData] = useState([]);
   const [departmentCode, setDepartmentCode] = useState("");
+  const [departmentTitle, setDepartmentTitle] = useState("");
 
   const [courseInstanceData, setCourseInstanceData] = useState([]);
   const [sortOrder, setSortOrder] = useState("");
@@ -54,10 +55,10 @@ const Heatmap = ({ inputText }) => {
       return;
     }
 
-    // Clear the existing SVG to prevent duplicates
-    d3.select(divRef.current).selectAll("svg").remove();
+    // Completely clear the SVG
+    d3.select(divRef.current).selectAll("*").remove(); // Clear everything inside the div
+
     const numStaff = data.length;
-    const numWeeks = 52;
     const margin = { top: 70, right: 50, bottom: 60, left: 150 };
     const cellHeight = 15;
     const cellPadding = 2;
@@ -97,6 +98,14 @@ const Heatmap = ({ inputText }) => {
       });
     }
 
+    const periodData = [
+      { name: "Period 1", start: 36, end: 45 },
+      { name: "Period 2", start: 46, end: 3 },
+      { name: "Period 3", start: 4, end: 13 },
+      { name: "Period 4", start: 14, end: 23 },
+      { name: "Summer", start: 24, end: 35 },
+    ];
+
     // Create SVG with dynamic height
     const svg = d3
       .select(divRef.current)
@@ -107,7 +116,7 @@ const Heatmap = ({ inputText }) => {
 
     const xScale = d3
       .scaleBand()
-      .domain(d3.range(numWeeks))
+      .domain(d3.range(data.length < 1 ? 52 : data[0].workLoad.length))
       .range([margin.left, width - margin.right])
       .padding(0.1);
 
@@ -122,11 +131,84 @@ const Heatmap = ({ inputText }) => {
       .attr("transform", `translate(${margin.left}, 0)`)
       .call(d3.axisLeft(yScale))
       .selectAll(".tick text")
-      .style("cursor", "pointer"); // Set cursor style;
+      .style("cursor", "pointer");
+
+    // Lägg till periodiska linjer
+    const periodLines = svg
+      .selectAll(".period-line")
+      .data(periodData)
+      .enter()
+      .append("line")
+      .attr("class", "period-line")
+      .attr("x1", (d) => xScale(d.start) - 1)
+      .attr("x2", (d) => xScale(d.start) - 1)
+      .attr("y1", margin.top - 5)
+      .attr("y2", height - margin.bottom)
+      .attr("stroke", "black")
+      .attr("stroke-width", 2); // Öka tjockleken på linjerna för tydlighet
+
+    // Lägg till periodiska texter
+    const periodText = svg
+      .selectAll(".period-text")
+      .data(periodData)
+      .enter()
+      .append("text")
+      .attr("class", "period-text")
+      .attr("x", (d) => xScale(d.start) + 95)
+      .attr("y", margin.top - 10)
+      .attr("text-anchor", "middle")
+      .text((d) => d.name)
+      .style("fill", "black");
+
+    const xAxis = svg
+      .append("g")
+      .attr("transform", `translate(0, ${height - margin.bottom})`)
+      .call(
+        d3
+          .axisBottom(xScale)
+          .tickValues(d3.range(data.length < 1 ? 52 : data[0].workLoad.length))
+          .tickFormat((d) => `${d + 1}`)
+      );
+
+    // Lägg till styling för x-axeln
+    xAxis
+      .selectAll(".tick text")
+      .style("font-size", "10px")
+      .style("fill", "black");
+
+    yAxis.each(function (d, i) {
+      const labelTexts = {
+        7411: "Datavetenskap - 7411",
+        7414: "Samhällsbyggnad - 7414",
+        7415: "BRP - 7415",
+      };
+      const labelText = labelTexts[d] || d;
+      d3.select(this).text(labelText);
+    });
 
     yAxis.on("click", (event, entityClicked) => {
+      const labelTexts = {
+        7411: "Datavetenskap",
+        7414: "Samhällsbyggnad",
+        7415: "BRP",
+      };
+
       if (!staffView) {
+        // Lägg till kod för att visa label bredvid klickad tick-text
+        const labelText = labelTexts[entityClicked] || entityClicked;
+        svg
+          .append("text")
+          .attr("x", width + 120) // Justera x-positionen efter behov
+          .attr("y", yScale(entityClicked) + yScale.bandwidth() / 2)
+          .attr("text-anchor", "start")
+          .attr("alignment-baseline", "middle")
+          .style("font-size", "12px")
+          .text(labelText);
+        const departmentName = labelTexts[entityClicked] || entityClicked;
+
+        // Uppdatera titeln baserat på enheten som klickades på
         setDepartmentCode(entityClicked);
+        setDepartmentTitle(departmentName); //
         setStaffView(true);
         setSingleStaffView(false);
       } else {
@@ -167,13 +249,15 @@ const Heatmap = ({ inputText }) => {
         COLORS.veryhigh,
       ]);
 
+    // Bind data to rectangles
     svg
       .selectAll(".heat-rect")
       .data(heatmapData)
       .enter()
       .append("rect")
+      .attr("class", "heat-rect")
       .attr("x", (d) => xScale(d.week))
-      .attr("y", (d) => yScale(d.name)) // Use the department name for the y-axis
+      .attr("y", (d) => yScale(d.name))
       .attr("width", xScale.bandwidth())
       .attr("height", yScale.bandwidth())
       .attr("fill", (d) => colorScale(d.workLoad))
@@ -305,7 +389,9 @@ const Heatmap = ({ inputText }) => {
             departmentCode
         );
         const data = await response.json();
+
         setStaffData(data);
+
         if (singleStaffView && selectedStaff) {
           // Find the updated data for the selected staff
           const updatedSelectedStaff = data.find(
@@ -383,7 +469,13 @@ const Heatmap = ({ inputText }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      drawHeatmap(staffView ? staffData : departmentData);
+      drawHeatmap(
+        staffView
+          ? singleStaffView
+            ? selectedStaff
+            : staffData
+          : departmentData
+      );
     };
 
     window.addEventListener("resize", handleResize);
@@ -391,7 +483,7 @@ const Heatmap = ({ inputText }) => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [staffData, departmentData, staffView]);
+  }, [staffData, departmentData, staffView, singleStaffView, selectedStaff]);
 
   useEffect(() => {
     let data;
@@ -472,7 +564,7 @@ const Heatmap = ({ inputText }) => {
   return (
     <div className="main-container">
       <div style={{ fontSize: "25px", fontWeight: "bold" }}>
-        {departmentCode ? `${departmentCode}` : "All Departments"}
+        {staffView ? departmentTitle : "All Departments"}
       </div>
       <div className="button-container">
         {!singleStaffView && (

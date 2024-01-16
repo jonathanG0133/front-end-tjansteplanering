@@ -56,12 +56,6 @@ th {
   padding-right: 1rem;
 }
 
-thead th {
-  z-index: 10;
-  position: sticky;
-  top: 0;
-}
-
 /* For other browsers like Firefox, scrollbar styling is limited */
 .container {
   max-height: 400px;
