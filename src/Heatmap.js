@@ -508,8 +508,6 @@ const Heatmap = ({ inputText }) => {
     singleStaffView,
     selectedStaff,
     sortOrder,
-    staffData.length > 0 ? staffData[0].workLoad.length : 0, // Add this dependency
-    departmentData.length > 0 ? departmentData[0].workLoad.length : 0, // And this one if needed
   ]);
 
   const getSortedData = (data, sortOrder) => {
