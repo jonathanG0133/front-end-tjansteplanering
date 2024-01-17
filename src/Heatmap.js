@@ -489,7 +489,8 @@ const Heatmap = ({ inputText }) => {
     let data;
 
     if (staffView) {
-      if (singleStaffView && selectedStaff) {
+      if (singleStaffView && selectedStaff && Array.isArray(staffData)) {
+        // Ensure selectedStaff has a name property and staffData is an array
         data = staffData.filter((staff) => staff.name === selectedStaff.name);
         console.log(selectedStaff);
       } else {

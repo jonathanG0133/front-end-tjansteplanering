@@ -38,10 +38,13 @@ const CourseTable = ({ selectedStaff, courseInstanceData }) => {
         className={`info-modal ${showInfo ? "show" : ""}`}
         style={{ backgroundColor: COLORS.background }}
       >
-        <div className="info-box">
+        <div
+          className="info-box"
+          style={{ backgroundColor: COLORS.notHandled }}
+        >
           <p>Not Handled</p>
         </div>
-        <div className="info-box">
+        <div className="info-box" style={{ backgroundColor: COLORS.cancelled }}>
           <p>Cancelled</p>
         </div>
       </div>
