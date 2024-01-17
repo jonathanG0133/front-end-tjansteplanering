@@ -386,7 +386,7 @@ const Heatmap = ({ inputText }) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
+          "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getInfoForAllStaffWithCode?date=" +
             inputText +
             "-01-01&code=" +
             departmentCode,

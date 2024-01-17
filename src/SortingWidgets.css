@@ -1,11 +1,6 @@
-.sökruta-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px; /* Adjust the height as needed */
-  }
-  
-  .sökruta {
-    /* Your existing styles for sökruta */
-  }
-  
+.input-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px; /* Adjust the height as needed */
+}

@@ -8,11 +8,11 @@ function SortingWidgets({ inputText, onInputChange, onClearClick }) {
   };
 
   return (
-    <div className="sökruta-container">
+    <div className="input-container">
       <input
         type="text"
         value={inputText}
-        placeholder={"Enter year"}
+        placeholder={"Enter Year (e.g. 2023)"}
         onChange={(e) => {
           const inputValue = e.target.value.slice(0, 4); // Limit to 4 characters
           onInputChange(inputValue);
