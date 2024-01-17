@@ -564,8 +564,13 @@ const Heatmap = ({ inputText }) => {
   return (
     <div className="main-container">
       <div style={{ fontSize: "25px", fontWeight: "bold" }}>
-        {staffView ? departmentTitle : "All Departments"}
+        {staffView
+          ? departmentCode
+            ? departmentTitle
+            : "All Staff"
+          : "All Departments"}
       </div>
+
       <div className="button-container">
         {!singleStaffView && (
           <>
