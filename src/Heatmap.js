@@ -451,13 +451,7 @@ const Heatmap = ({ inputText }) => {
       .then((data) => {
         setCourseInstanceData(data);
       })
-      .catch((error) =>
-        console.error(
-          "Error fetching data: Invalid Year" +
-            "\n" +
-            "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"
-        )
-      );
+      .catch((error) => console.error("Error fetching data: Invalid Year"));
   }, [inputText]);
 
   // Fetching project data START
@@ -470,13 +464,7 @@ const Heatmap = ({ inputText }) => {
       .then((data) => {
         setProjectData(data);
       })
-      .catch((error) =>
-        console.error(
-          "Error fetching data: Invalid Year" +
-            "\n" +
-            "https://media1.tenor.com/m/DUmbV7Z7eqAAAAAC/cooking-cook.gif"
-        )
-      );
+      .catch((error) => console.error("Error fetching data: Invalid Year"));
   }, [inputText]);
 
   useEffect(() => {
