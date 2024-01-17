@@ -380,13 +380,17 @@ const Heatmap = ({ inputText }) => {
 
   // Fetching all staff data START
   useEffect(() => {
+    // Initialize AbortController
+    const controller = new AbortController();
+    const signal = controller.signal;
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://node128935-tjansteplanering.jls-sto2.elastx.net/commitment/getInfoForAllStaffWithCode?date=" +
+          "http://localhost:8080/commitment/getInfoForAllStaffWithCode?date=" +
             inputText +
             "-01-01&code=" +
-            departmentCode
+            departmentCode,
+          { signal }
         );
         const data = await response.json();
 
@@ -401,11 +405,19 @@ const Heatmap = ({ inputText }) => {
           setCourseInstanceData(updatedSelectedStaff.courseInstances);
         }
       } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Error fetching staff data: ", error);
+        }
         console.error("Error fetching staff data: Invalid Year");
       }
     };
 
     fetchData();
+
+    // Cleanup function
+    return () => {
+      controller.abort();
+    };
   }, [inputText, staffView, departmentCode]);
 
   // Fetching department data START
